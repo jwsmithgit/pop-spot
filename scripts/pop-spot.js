@@ -120,7 +120,7 @@ async function getAlbumTracks(accessToken, albumId) {
 
 function findPopularTracks(tracks) {
     const maxPopularity = Math.max(...tracks.map(track => track.popularity));
-    const halfMaxPopularity = maxPopularity / 2;
+    const halfMaxPopularity = maxPopularity * 0.9;
 
     return tracks.filter(track => track.popularity >= halfMaxPopularity);
 }
