@@ -118,6 +118,7 @@ async function createPlaylist(accessToken, name, description, trackUris) {
 
     const data = await response.json();
     if (!response.ok) {
+        console.log(data);
         throw new Error(`Failed to create playlist: ${data.error}`);
     }
 
