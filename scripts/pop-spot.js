@@ -149,13 +149,16 @@ async function createPlaylist(accessToken, name, description, trackUris) {
 export async function execute(access_token) {
     // let token = await getAccessToken();
     let albums = await getLikedAlbums(access_token);
+    console.log('albums: ' + albums);
     let popularTracks = [];
     for (let album of albums)
     {
         let tracks = await getAlbumTracks(access_token, album.album.id);
+        console.log('albums tracks: ' + tracks);
         popularTracks = popularTracks.concat(findPopularTracks(tracks));
     }
 
+    console.log('popular tracks: ' + popularTracks);
     // let trackIds = albums.flatMap(album => album.album.tracks.items.map(track => track.uri));
     await createPlaylist(access_token, 'Pop Spot', 'Liked Album Popular Songs', popularTracks.map(track => track.uri));
 }
