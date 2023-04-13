@@ -21,7 +21,7 @@ async function getAccessToken() {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Authorization': `Basic ${base64.encode(`${CLIENT_ID}:${CLIENT_SECRET}`)}`
         },
-        body: 'grant_type=client_credentials&redirect_uri=${REDIRECT_URI}'
+        body: `grant_type=client_credentials&redirect_uri=${REDIRECT_URI}`
     });
 
     // Parse the response as JSON and extract the access token from the response
