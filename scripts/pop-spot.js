@@ -75,7 +75,6 @@ async function getLikedAlbums(accessToken) {
         } else {
             break;
         }
-        break;
     }
 
     return allAlbums;
