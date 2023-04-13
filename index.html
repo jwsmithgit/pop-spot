@@ -6,5 +6,30 @@
         const authEndpoint = "https://accounts.spotify.com/authorize";
 
         window.location = `${authEndpoint}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${scopes.join("%20")}&response_type=token`;
+    } 
+
+    function getHashParams() {
+        const hashParams = {};
+        let e, r = /([^&;=]+)=?([^&;]*)/g,
+            q = window.location.hash.substring(1);
+        while (e = r.exec(q)) {
+            hashParams[e[1]] = decodeURIComponent(e[2]);
+        }
+        return hashParams;
+    }
+    
+    const spotifyApi = new SpotifyWebApi();
+    const params = getHashParams();
+    const access_token = params.access_token;
+    if (access_token) {
+    spotifyApi.setAccessToken(access_token);
+
+    spotifyApi.getMe()
+        .then(function(data) {
+        console.log("Logged in as: " + data.display_name);
+        main(access_token);
+        }, function(err) {
+        console.error(err);
+        });
     }
 </script>
