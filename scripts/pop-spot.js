@@ -146,24 +146,33 @@ async function createPlaylist(accessToken, name, description, trackUris) {
 
     const playlistId = data.id;
 
-    const addTracksResponse = await fetch(`${API_BASE_URL}/playlists/${playlistId}/tracks`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            uris: trackUris
-        })
-    });
-
-    const addTracksData = await addTracksResponse.json();
-    if (!addTracksResponse.ok) {
-        console.log(JSON.stringify(addTracksData));
-        throw new Error(`Failed to add tracks to playlist: ${addTracksData.error}`);
+    // Divide the track URIs into chunks of 100
+    const chunkedTrackUris = [];
+    for (let i = 0; i < trackUris.length; i += 100) {
+        chunkedTrackUris.push(trackUris.slice(i, i + 100));
     }
-    else {
-        console.log('Tracks added to playlist!');
+
+    // Send requests for each chunk of track URIs
+    for (let i = 0; i < chunkedTrackUris.length; i++) {
+        const addTracksResponse = await fetch(`${API_BASE_URL}/playlists/${playlistId}/tracks`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                uris: chunkedTrackUris[i]
+            })
+        });
+
+        const addTracksData = await addTracksResponse.json();
+        if (!addTracksResponse.ok) {
+            console.log(JSON.stringify(addTracksData));
+            throw new Error(`Failed to add tracks to playlist: ${addTracksData.error}`);
+        }
+        else {
+            console.log('Tracks added to playlist!');
+        }
     }
 }
 
