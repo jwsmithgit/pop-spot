@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import base64 from 'base-64';
+import SpotifyWebApi from 'spotify-web-api-js';
 
 // Replace these values with your own Client ID and Client Secret
 const CLIENT_ID = 'a02434801a964928b903cf894c58151e';
