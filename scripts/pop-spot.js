@@ -143,7 +143,7 @@ export async function execute(access_token) {
     let popularTracks = [];
     for (let album of albums)
     {
-        let tracks = await getAlbumTracks(access_token, album.id);
+        let tracks = await getAlbumTracks(access_token, album.album.id);
         popularTracks = popularTracks.concat(findPopularTracks(tracks));
     }
     // let trackIds = albums.flatMap(album => album.album.tracks.items.map(track => track.uri));
