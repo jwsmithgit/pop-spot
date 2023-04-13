@@ -146,8 +146,9 @@ export async function execute(access_token) {
         let tracks = await getAlbumTracks(access_token, album.album.id);
         popularTracks = popularTracks.concat(findPopularTracks(tracks));
     }
+
     // let trackIds = albums.flatMap(album => album.album.tracks.items.map(track => track.uri));
-    await createPlaylist(access_token, 'Pop Spot', 'Liked Album Popular Songs', popularTracks);
+    await createPlaylist(access_token, 'Pop Spot', 'Liked Album Popular Songs', popularTracks.map(track => track.uri));
 }
 
 // const spotifyApi = new SpotifyWebApi();
