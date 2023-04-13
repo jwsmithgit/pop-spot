@@ -4,6 +4,7 @@ import base64 from 'base-64';
 // Replace these values with your own Client ID and Client Secret
 const CLIENT_ID = 'a02434801a964928b903cf894c58151e';
 const CLIENT_SECRET = '6ee1a0e15d7b45c09e0306a4cbba8a5b';
+const REDIRECT_URI = 'https://warm-wave-05889.herokuapp.com/callback';
 
 // This is the URL for the Spotify Web API endpoint to get an access token
 const TOKEN_URL = 'https://accounts.spotify.com/api/token';
@@ -20,7 +21,7 @@ async function getAccessToken() {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Authorization': `Basic ${base64.encode(`${CLIENT_ID}:${CLIENT_SECRET}`)}`
         },
-        body: 'grant_type=client_credentials'
+        body: 'grant_type=client_credentials&redirect_uri=${REDIRECT_URI}'
     });
 
     // Parse the response as JSON and extract the access token from the response
