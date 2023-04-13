@@ -138,12 +138,12 @@ async function createPlaylist(accessToken, name, description, trackUris) {
 }
 
 export async function execute(access_token) {
-    let token = await getAccessToken();
-    let albums = await getLikedAlbums(token);
+    // let token = await getAccessToken();
+    let albums = await getLikedAlbums(access_token);
     let trackIds = albums.flatMap(album => album.album.tracks.items.map(track => track.uri));
-    let tracks = await getAlbumTracks(token, trackIds);
+    let tracks = await getAlbumTracks(access_token, trackIds);
     let popularTracks = findPopularTracks(tracks);
-    await createPlaylist(token, 'Pop Spot', 'Liked Album Popular Songs', popularTracks);
+    await createPlaylist(access_token, 'Pop Spot', 'Liked Album Popular Songs', popularTracks);
 }
 
 // const spotifyApi = new SpotifyWebApi();

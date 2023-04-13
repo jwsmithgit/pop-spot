@@ -74,6 +74,8 @@ app.get('/callback', (req, res) => {
 app.get('/success', (req, res) => {
     // Use req.session.accessToken to make API requests to Spotify on behalf of the user
     res.send('Authenticated');
+
+    execute(req.session.accessToken);
 });
 
 app.get('/error', (req, res) => {
