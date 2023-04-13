@@ -64,7 +64,7 @@ async function getLikedAlbums(accessToken) {
 
         const data = await response.json();
         if (!response.ok) {
-            console.log(json.stringify(data));
+            console.log(JSON.stringify(data));
             throw new Error(`Failed to get liked albums: ${data.error}`);
         }
 
@@ -90,7 +90,7 @@ async function getAlbumTracks(accessToken, albumId) {
 
     const data = await response.json();
     if (!response.ok) {
-        console.log(json.stringify(data));
+        console.log(JSON.stringify(data));
         throw new Error(`Failed to get album tracks: ${data.error}`);
     }
 
@@ -105,7 +105,7 @@ async function getAlbumTracks(accessToken, albumId) {
 
         const trackData = await trackResponse.json();
         if (!trackResponse.ok) {
-            console.log(json.stringify(trackData));
+            console.log(JSON.stringify(trackData));
             throw new Error(`Failed to get track: ${trackData.error.message}`);
         }
 
@@ -140,7 +140,7 @@ async function createPlaylist(accessToken, name, description, trackUris) {
 
     const data = await response.json();
     if (!response.ok) {
-        console.log(json.stringify(data));
+        console.log(JSON.stringify(data));
         throw new Error(`Failed to create playlist: ${data.error}`);
     }
 
@@ -159,7 +159,7 @@ async function createPlaylist(accessToken, name, description, trackUris) {
 
     const addTracksData = await addTracksResponse.json();
     if (!addTracksResponse.ok) {
-        console.log(json.stringify(addTracksData));
+        console.log(JSON.stringify(addTracksData));
         throw new Error(`Failed to add tracks to playlist: ${addTracksData.error}`);
     }
     else {
@@ -170,15 +170,15 @@ async function createPlaylist(accessToken, name, description, trackUris) {
 export async function execute(access_token) {
     // let token = await getAccessToken();
     let albums = await getLikedAlbums(access_token);
-    console.log('albums: ' + albums);
+    console.log('albums: ' + JSON.stringify(albums));
     let popularTracks = [];
     for (let album of albums) {
         let tracks = await getAlbumTracks(access_token, album.album.id);
-        console.log('albums tracks: ' + tracks);
+        console.log('albums tracks: ' + JSON.stringify(tracks));
         popularTracks = popularTracks.concat(findPopularTracks(tracks));
     }
 
-    console.log('popular tracks: ' + popularTracks);
+    console.log('popular tracks: ' + JSON.stringify(popularTracks));
     // let trackIds = albums.flatMap(album => album.album.tracks.items.map(track => track.uri));
     await createPlaylist(access_token, 'Pop Spot', 'Liked Album Popular Songs', popularTracks.map(track => track.uri));
 }
