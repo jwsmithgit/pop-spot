@@ -62,9 +62,9 @@ async function getLikedAlbums(accessToken) {
             }
         });
 
-        console.log('Response:', response);
         const data = await response.json();
         if (!response.ok) {
+            console.log(data);
             throw new Error(`Failed to get liked albums: ${data.error}`);
         }
 
