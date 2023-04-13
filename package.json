@@ -1,0 +1,14 @@
+{
+  "type": "module",
+  "name": "pop-spot",
+  "version": "1.0.0",
+  "description": "Liked Albums Popular Songs Playlist",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "base-64": "^1.0.0",
+    "node-fetch": "^3.0.0"
+  }
+}
