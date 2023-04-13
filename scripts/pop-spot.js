@@ -135,7 +135,15 @@ async function createPlaylist(accessToken, name, description, trackUris) {
         })
     });
 
-    console.log('Tracks added to playlist!');
+    const addTracksData = await addTracksResponse.json();
+    if (!addTracksResponse.ok) {
+        console.log(addTracksData);
+        throw new Error(`Failed to add tracks to playlist: ${addTracksData.error}`);
+    }
+    else
+    {
+        console.log('Tracks added to playlist!');
+    }
 }
 
 export async function execute(access_token) {
