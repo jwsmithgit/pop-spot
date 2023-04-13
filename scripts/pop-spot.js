@@ -81,39 +81,44 @@ async function getLikedAlbums(accessToken) {
 }
 
 async function getAlbumTracks(accessToken, albumId) {
-    const response = await fetch(`${API_BASE_URL}/albums/${albumId}/tracks`, {
+    const albumTracksResponse = await fetch(`${API_BASE_URL}/albums/${albumId}/tracks`, {
         headers: {
             'Authorization': `Bearer ${accessToken}`
         }
     });
-
-    const data = await response.json();
-    if (!response.ok) {
-        console.log(JSON.stringify(data));
-        throw new Error(`Failed to get album tracks: ${data.error}`);
+    
+    const albumTracksData = await albumTracksResponse.json();
+    if (!albumTracksResponse.ok) {
+        console.log(JSON.stringify(albumTracksData));
+        throw new Error(`Failed to get album tracks: ${albumTracksData.error}`);
     }
-
-    const tracks = data.items;
-
-    const tracksWithPopularity = await Promise.all(tracks.map(async (track) => {
-        const trackResponse = await fetch(`${API_BASE_URL}/tracks/${track.id}`, {
-            headers: {
-                Authorization: 'Bearer ' + accessToken
-            }
-        });
-
-        const trackData = await trackResponse.json();
-        if (!trackResponse.ok) {
-            console.log(JSON.stringify(trackData));
-            throw new Error(`Failed to get track: ${trackData.error.message}`);
+    
+    const tracks = albumTracksData.items;
+    
+    // Construct an array of track IDs
+    const trackIds = tracks.map(track => track.id);
+    
+    // Make a request to the tracks endpoint to retrieve popularity data for all the tracks
+    const tracksResponse = await fetch(`${API_BASE_URL}/tracks?ids=${trackIds.join(',')}`, {
+        headers: {
+            Authorization: 'Bearer ' + accessToken
         }
-
-        return {
-            ...track,
-            popularity: trackData.popularity
-        };
+    });
+    
+    if (!tracksResponse.ok) {
+        const errorData = await tracksResponse.json();
+        console.log(JSON.stringify(errorData));
+        throw new Error(`Failed to get tracks: ${errorData.error.message}`);
+    }
+    
+    const tracksData = await tracksResponse.json();
+    
+    // Create an array of track objects with popularity data
+    const tracksWithPopularity = tracksData.tracks.map(trackData => ({
+        ...tracks.find(track => track.id === trackData.id),
+        popularity: trackData.popularity
     }));
-
+    
     return tracksWithPopularity;
 }
 
