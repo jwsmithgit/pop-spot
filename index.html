@@ -1,2 +1,10 @@
 <script src="index.js"></script>
 <button onclick="loginWithSpotify()">Log in with Spotify</button>
+<script>
+    function loginWithSpotify() {
+        const scopes = ["user-read-private", "user-read-email"];
+        const authEndpoint = "https://accounts.spotify.com/authorize";
+
+        window.location = `${authEndpoint}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${scopes.join("%20")}&response_type=token`;
+    }
+</script>

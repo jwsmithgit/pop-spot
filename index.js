@@ -13,13 +13,6 @@ const TOKEN_URL = 'https://accounts.spotify.com/api/token';
 // This is the base URL for the Spotify Web API endpoints
 const API_BASE_URL = 'https://api.spotify.com/v1';
 
-function loginWithSpotify() {
-    const scopes = ["user-read-private", "user-read-email"];
-    const authEndpoint = "https://accounts.spotify.com/authorize";
-
-    window.location = `${authEndpoint}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${scopes.join("%20")}&response_type=token`;
-}
-
 function getHashParams() {
     const hashParams = {};
     let e, r = /([^&;=]+)=?([^&;]*)/g,
