@@ -104,7 +104,7 @@ function findPopularTracks(tracks) {
 }
 
 async function createPlaylist(accessToken, name, description, trackUris) {
-    const response = await fetch(`${API_BASE_URL}/users/me/playlists`, {
+    const response = await fetch(`${API_BASE_URL}/me/playlists`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${accessToken}`,
