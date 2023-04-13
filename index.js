@@ -1,12 +1,11 @@
 import express from 'express';
 import path from 'path';
+
 const app = express();
-
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-  });
-
 const port = process.env.PORT || 3000;
+
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
+  console.log(`Server listening on port ${port}`);
 });
