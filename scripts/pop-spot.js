@@ -64,7 +64,7 @@ async function getLikedAlbums(accessToken) {
 
         const data = await response.json();
         if (!response.ok) {
-            console.log(data);
+            console.log(json.stringify(data));
             throw new Error(`Failed to get liked albums: ${data.error}`);
         }
 
@@ -90,27 +90,28 @@ async function getAlbumTracks(accessToken, albumId) {
 
     const data = await response.json();
     if (!response.ok) {
+        console.log(json.stringify(data));
         throw new Error(`Failed to get album tracks: ${data.error}`);
     }
 
     const tracks = data.items;
-    
+
     const tracksWithPopularity = await Promise.all(tracks.map(async (track) => {
         const trackResponse = await fetch(`${API_BASE_URL}/tracks/${track.id}`, {
-        headers: {
-            Authorization: 'Bearer ' + accessToken
-        }
+            headers: {
+                Authorization: 'Bearer ' + accessToken
+            }
         });
 
         const trackData = await trackResponse.json();
         if (!trackResponse.ok) {
-        console.log(trackData);
-        throw new Error(`Failed to get track: ${trackData.error.message}`);
+            console.log(json.stringify(trackData));
+            throw new Error(`Failed to get track: ${trackData.error.message}`);
         }
 
         return {
-        ...track,
-        popularity: trackData.popularity
+            ...track,
+            popularity: trackData.popularity
         };
     }));
 
@@ -139,7 +140,7 @@ async function createPlaylist(accessToken, name, description, trackUris) {
 
     const data = await response.json();
     if (!response.ok) {
-        console.log(data);
+        console.log(json.stringify(data));
         throw new Error(`Failed to create playlist: ${data.error}`);
     }
 
@@ -158,11 +159,10 @@ async function createPlaylist(accessToken, name, description, trackUris) {
 
     const addTracksData = await addTracksResponse.json();
     if (!addTracksResponse.ok) {
-        console.log(addTracksData);
+        console.log(json.stringify(addTracksData));
         throw new Error(`Failed to add tracks to playlist: ${addTracksData.error}`);
     }
-    else
-    {
+    else {
         console.log('Tracks added to playlist!');
     }
 }
@@ -172,8 +172,7 @@ export async function execute(access_token) {
     let albums = await getLikedAlbums(access_token);
     console.log('albums: ' + albums);
     let popularTracks = [];
-    for (let album of albums)
-    {
+    for (let album of albums) {
         let tracks = await getAlbumTracks(access_token, album.album.id);
         console.log('albums tracks: ' + tracks);
         popularTracks = popularTracks.concat(findPopularTracks(tracks));
