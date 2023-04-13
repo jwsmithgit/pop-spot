@@ -92,8 +92,27 @@ async function getAlbumTracks(accessToken, albumId) {
     if (!response.ok) {
         throw new Error(`Failed to get album tracks: ${data.error}`);
     }
+    
+    const tracksWithPopularity = await Promise.all(tracks.map(async (track) => {
+        const trackResponse = await fetch(`${API_BASE_URL}/tracks/${track.id}`, {
+        headers: {
+            Authorization: 'Bearer ' + accessToken
+        }
+        });
 
-    return data.items;
+        const trackData = await trackResponse.json();
+        if (!trackResponse.ok) {
+        console.log(trackData);
+        throw new Error(`Failed to get track: ${trackData.error.message}`);
+        }
+
+        return {
+        ...track,
+        popularity: trackData.popularity
+        };
+    }));
+
+    return tracksWithPopularity;
 }
 
 function findPopularTracks(tracks) {
