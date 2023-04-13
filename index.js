@@ -12,6 +12,23 @@ const TOKEN_URL = 'https://accounts.spotify.com/api/token';
 // This is the base URL for the Spotify Web API endpoints
 const API_BASE_URL = 'https://api.spotify.com/v1';
 
+function loginWithSpotify() {
+    const scopes = ["user-read-private", "user-read-email"];
+    const authEndpoint = "https://accounts.spotify.com/authorize";
+
+    window.location = `${authEndpoint}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${scopes.join("%20")}&response_type=token`;
+}
+
+function getHashParams() {
+    const hashParams = {};
+    let e, r = /([^&;=]+)=?([^&;]*)/g,
+        q = window.location.hash.substring(1);
+    while (e = r.exec(q)) {
+        hashParams[e[1]] = decodeURIComponent(e[2]);
+    }
+    return hashParams;
+}
+
 // This function will get an access token using your Client ID and Client Secret
 async function getAccessToken() {
     // Use the `fetch()` function to send a POST request to the token endpoint with your Client ID and Client Secret
@@ -120,11 +137,26 @@ async function createPlaylist(accessToken, name, description, trackUris) {
     console.log('Tracks added to playlist!');
 }
 
-(async function() {
+async function main(access_token) {
     let token = await getAccessToken();
     let albums = await getLikedAlbums(token);
     let trackIds = albums.flatMap(album => album.album.tracks.items.map(track => track.uri));
     let tracks = await getAlbumTracks(token, trackIds);
     let popularTracks = findPopularTracks(tracks);
     await createPlaylist(token, 'Pop Spot', 'Liked Album Popular Songs', popularTracks);
-})();
+}
+
+const spotifyApi = new SpotifyWebApi();
+const params = getHashParams();
+const access_token = params.access_token;
+if (access_token) {
+  spotifyApi.setAccessToken(access_token);
+
+  spotifyApi.getMe()
+    .then(function(data) {
+      console.log("Logged in as: " + data.display_name);
+      main(access_token);
+    }, function(err) {
+      console.error(err);
+    });
+}
