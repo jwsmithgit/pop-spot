@@ -124,7 +124,7 @@ async function createPlaylist(accessToken, name, description, trackUris) {
 
     const playlistId = data.id;
 
-    await fetch(`${API_BASE_URL}/playlists/${playlistId}/tracks`, {
+    const addTracksResponse = await fetch(`${API_BASE_URL}/playlists/${playlistId}/tracks`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${accessToken}`,
