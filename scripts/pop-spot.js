@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 const API_BASE_URL = 'https://api.spotify.com/v1';
 
-const delay = 1000;
+let delay = 1000;
 async function fetchWithDelay(call, data) {
     const response = await fetch(call, data);
 
