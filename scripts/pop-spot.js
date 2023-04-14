@@ -6,10 +6,7 @@ async function fetchWithDelay(call, callData) {
     await new Promise(resolve => setTimeout(resolve, delay));
 
     const response = await fetch(call, callData);
-    const responseData = await response.json();
-
     console.log('response: ' + JSON.stringify(response));
-    console.log('response data: ' + JSON.stringify(responseData));
     if (!response.ok) {
         if (response.status === 429) {
             delay *= 2;
@@ -20,7 +17,7 @@ async function fetchWithDelay(call, callData) {
     }
 
     delay = Math.max(1000, delay * 0.5);
-    return responseData;
+    return await response.json();
 }
 
 async function getLikedTracks(accessToken) {
