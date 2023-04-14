@@ -2,7 +2,9 @@ import express from 'express';
 import path from 'path';
 import session from 'express-session';
 import router from './routes/index.js';
+import dotenv from 'dotenv';
 
+dotenv.config();
 const app = express();
 
 app.use(express.static(path.join(process.cwd(), 'public')));

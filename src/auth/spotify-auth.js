@@ -1,4 +1,5 @@
 import request from 'request';
+import url from 'url';
 
 // Spotify authentication URL
 export function getAuthorizationUrl(state) {

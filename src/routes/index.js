@@ -1,11 +1,11 @@
+import dotenv from 'dotenv';
 import express from 'express';
 import path from 'path';
-import request from 'request';
 import * as url from 'url';
-import { getAuthorizationUrl } from '../auth/spotify-auth.js';
-import { authenticate } from '../auth/spotify-auth.js';
+import { getAuthorizationUrl, authenticate } from '../auth/spotify-auth.js';
 import { execute } from '../scripts/pop-spot.js';
 
+dotenv.config();
 const router = express.Router();
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 const redirectUri = process.env.SPOTIFY_REDIRECT_URI;
