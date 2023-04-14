@@ -120,6 +120,7 @@ async function getTracks(accessToken, trackIds) {
     for (let trackId of trackIds) {
         const trackData = getTrackData(trackId);
         if (trackData) {
+            console.log('track data: ' + JSON.stringify(trackData))
             tracks.push(trackData);
         } else {
             queryTracks.push(trackId);
@@ -213,10 +214,11 @@ export async function execute(accessToken) {
     let likedTracks = await getLikedTracks(accessToken);
     let likedTrackAlbumIds = makeDistinct(likedTracks.map(track => track.track.album.id));
     let allAlbums = likedAlbums.concat(await getAlbums(accessToken, likedTrackAlbumIds));
+    console.log('All albums: ' + JSON.stringify(allTracks));
 
     let allTrackIds = makeDistinct(allAlbums.flatMap(album => album.trackIds));
     let allTracks = getTracks(accessToken, allTrackIds);
-    console.log('All albums: ' + JSON.stringify(allTracks));
+    console.log('All tracks: ' + JSON.stringify(allTracks));
     let allTracksByAlbumId = groupTracksByAlbumId(allTracks);
     console.log('All albums: ' + JSON.stringify(allTracksByAlbumId));
 
