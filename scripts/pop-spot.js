@@ -1,54 +1,60 @@
 import fetch from 'node-fetch';
-// const SpotifyWebApi = require('spotify-web-api-js');
-
-// // Replace these values with your own Client ID and Client Secret
-// const CLIENT_ID = 'a02434801a964928b903cf894c58151e';
-// const CLIENT_SECRET = '6ee1a0e15d7b45c09e0306a4cbba8a5b';
-// const REDIRECT_URI = 'https://warm-wave-05889.herokuapp.com/callback';
-
-// // This is the URL for the Spotify Web API endpoint to get an access token
-// const TOKEN_URL = 'https://accounts.spotify.com/api/token';
-
-// This is the base URL for the Spotify Web API endpoints
 const API_BASE_URL = 'https://api.spotify.com/v1';
 
-// function loginWithSpotify() {
-//     const scopes = ["user-read-private", "user-read-email"];
-//     const authEndpoint = "https://accounts.spotify.com/authorize";
+async function getLikedTracks(accessToken) {
+    const limit = 50;
+    let offset = 0;
+    let allSongs = [];
 
-//     window.location = `${authEndpoint}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${scopes.join("%20")}&response_type=token`;
-// } 
+    while (true) {
+        const response = await fetch(`${API_BASE_URL}/me/tracks?offset=${offset}&limit=${limit}`, {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            }
+        });
 
-// function getHashParams() {
-//     const hashParams = {};
-//     let e, r = /([^&;=]+)=?([^&;]*)/g,
-//         q = window.location.hash.substring(1);
-//     while (e = r.exec(q)) {
-//         hashParams[e[1]] = decodeURIComponent(e[2]);
-//     }
-//     return hashParams;
-// }
+        const data = await response.json();
+        if (!response.ok) {
+            console.log(JSON.stringify(data));
+            throw new Error(`Failed to get liked songs: ${data.error}`);
+        }
 
-// // This function will get an access token using your Client ID and Client Secret
-// async function getAccessToken() {
-//     // Use the `fetch()` function to send a POST request to the token endpoint with your Client ID and Client Secret
-//     const response = await fetch(TOKEN_URL, {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/x-www-form-urlencoded',
-//             'Authorization': `Basic ${btoa(`${CLIENT_ID}:${CLIENT_SECRET}`)}`
-//         },
-//         body: `grant_type=client_credentials&redirect_uri=${REDIRECT_URI}`
-//     });
+        allSongs = allSongs.concat(data.items);
 
-//     // Parse the response as JSON and extract the access token from the response
-//     const data = await response.json();
-//     if (!response.ok) {
-//         throw new Error(`Failed to get access token: ${data.error}`);
-//     }
+        if (data.next) {
+            offset += limit;
+        } else {
+            break;
+        }
+    }
 
-//     return data.access_token;
-// }
+    return allSongs;
+}
+
+async function getAlbumsByIds(accessToken, albumIds) {
+    const limit = 50;
+    const albumChunks = [];
+    for (let i = 0; i < albumIds.length; i += limit) {
+        albumChunks.push(albumIds.slice(i, i + limit));
+    }
+
+    const albums = [];
+    for (let i = 0; i < albumChunks.length; i++) {
+        const response = await fetch(`${API_BASE_URL}/albums?ids=${albumChunks[i].join(',')}`, {
+            headers: {
+                'Authorization': 'Bearer ' + accessToken
+            }
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            console.log(JSON.stringify(data));
+            throw new Error(`Failed to get albums: ${data.error}`);
+        }
+        albums.push(...data.albums);
+    }
+
+    return albums;
+}
 
 async function getLikedAlbums(accessToken) {
     const limit = 50;
@@ -80,49 +86,33 @@ async function getLikedAlbums(accessToken) {
     return allAlbums;
 }
 
-async function getAlbumTracks(accessToken, albumId) {
-    const albumTracksResponse = await fetch(`${API_BASE_URL}/albums/${albumId}/tracks`, {
-        headers: {
-            'Authorization': `Bearer ${accessToken}`
+async function getTracksByAlbumId(trackIds, accessToken) {
+    let i, j, chunk, response;
+    const trackData = {};
+
+    for (i = 0, j = trackIds.length; i < j; i += 100) {
+        chunk = trackIds.slice(i, i + 100);
+        response = await fetch(`https://api.spotify.com/v1/tracks?ids=${chunk.join(',')}`, {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to retrieve track data: ${response.status}`);
         }
-    });
-    
-    const albumTracksData = await albumTracksResponse.json();
-    if (!albumTracksResponse.ok) {
-        console.log(JSON.stringify(albumTracksData));
-        throw new Error(`Failed to get album tracks: ${albumTracksData.error}`);
+
+        const data = await response.json();
+
+        data.tracks.forEach((track) => {
+            trackData[track.id] = track;
+        });
     }
-    
-    const tracks = albumTracksData.items;
-    
-    // Construct an array of track IDs
-    const trackIds = tracks.map(track => track.id);
-    
-    // Make a request to the tracks endpoint to retrieve popularity data for all the tracks
-    const tracksResponse = await fetch(`${API_BASE_URL}/tracks?ids=${trackIds.join(',')}`, {
-        headers: {
-            Authorization: 'Bearer ' + accessToken
-        }
-    });
-    
-    if (!tracksResponse.ok) {
-        const errorData = await tracksResponse.json();
-        console.log(JSON.stringify(errorData));
-        throw new Error(`Failed to get tracks: ${errorData.error.message}`);
-    }
-    
-    const tracksData = await tracksResponse.json();
-    
-    // Create an array of track objects with popularity data
-    const tracksWithPopularity = tracksData.tracks.map(trackData => ({
-        ...tracks.find(track => track.id === trackData.id),
-        popularity: trackData.popularity
-    }));
-    
-    return tracksWithPopularity;
+
+    return trackData;
 }
 
-function findPopularTracks(tracks) {
+function getPopularTracks(tracks) {
     const minPopularity = Math.min(...tracks.map(track => track.popularity));
     const maxPopularity = Math.max(...tracks.map(track => track.popularity));
     if (minPopularity == maxPopularity) return [];
@@ -181,33 +171,40 @@ async function createPlaylist(accessToken, name, description, trackUris) {
     }
 }
 
-export async function execute(access_token) {
-    // let token = await getAccessToken();
-    let albums = await getLikedAlbums(access_token);
-    console.log('albums: ' + JSON.stringify(albums));
-    let popularTracks = [];
-    for (let album of albums) {
-        let tracks = await getAlbumTracks(access_token, album.album.id);
-        console.log('albums tracks: ' + JSON.stringify(tracks));
-        popularTracks = popularTracks.concat(findPopularTracks(tracks));
-    }
-
-    console.log('popular tracks: ' + JSON.stringify(popularTracks));
-    // let trackIds = albums.flatMap(album => album.album.tracks.items.map(track => track.uri));
-    await createPlaylist(access_token, 'Pop Spot', 'Liked Album Popular Songs', popularTracks.map(track => track.uri));
+function makeDistinct(array) {
+    return [...new Set(array)];
 }
 
-// const spotifyApi = new SpotifyWebApi();
-// const params = getHashParams();
-// const access_token = params.access_token;
-// if (access_token) {
-// spotifyApi.setAccessToken(access_token);
+function groupTracksByAlbum(tracks) {
+    return tracks.reduce((result, track) => {
+        const albumId = track.album.id;
+        if (!result[albumId]) {
+            result[albumId] = [];
+        }
+        result[albumId].push(track);
+        return result;
+    }, {});
+}
 
-// spotifyApi.getMe()
-//     .then(function(data) {
-//     console.log("Logged in as: " + data.display_name);
-//     main(access_token);
-//     }, function(err) {
-//     console.error(err);
-//     });
-// }
+export async function execute(accessToken) {
+    let likedAlbums = await getLikedAlbums(accessToken);
+
+    let likedTracks = await getLikedTracks(accessToken);
+    let likedTrackAlbumIds = makeDistinct(likedTracks.map(track => track.album.id));
+    let allAlbums = likedAlbums.concat(await getAlbumsByIds(likedTrackAlbumIds));
+    console.log('All albums: ' + JSON.stringify(allAlbums));
+
+    let allAlbumTrackIds = makeDistinct(allAlbums.flatMap(album => album.trackIds));
+    let allAlbumTracks = getTracks(allAlbumTrackIds);
+    let allAlbumTracksByAlbumId = groupTracksByAlbum(allAlbumTracks);
+
+    let popularTracksByAlbumId = {};
+    for (let albumId in allAlbumTracksByAlbumId)
+    {
+        popularTracksByAlbumId[albumId] = getPopularTracks(allAlbumTracksByAlbumId[albumId]);
+    }
+    let popularTracks = Object.values(popularTracksByAlbumId).flat();
+    console.log('Popular tracks: ' + JSON.stringify(popularTracks));
+    
+    await createPlaylist(accessToken, 'Pop Spot', 'Liked Album Popular Songs', popularTracks.map(track => track.uri));
+}
