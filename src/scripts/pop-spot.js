@@ -34,7 +34,7 @@ async function fetchWithDelay(call, callData) {
 async function getLikedTracks(accessToken) {
     const limit = 50;
     let offset = 0;
-    let allTracks = [];
+    let tracks = [];
 
     while (true) {
         const data = await fetchWithDelay(`${API_BASE_URL}/me/tracks?offset=${offset}&limit=${limit}`, {
@@ -43,7 +43,14 @@ async function getLikedTracks(accessToken) {
             }
         });
 
-        allTracks = allTracks.concat(data.items);
+        for (let track of data.items) {
+            const trackData = {
+                id: track.id,
+                popularity: track.popularity
+            };
+            await saveTrackData(track.id, trackData);
+            tracks.push(trackData);
+        }
 
         if (data.next) {
             offset += limit;
@@ -52,7 +59,7 @@ async function getLikedTracks(accessToken) {
         }
     }
 
-    return allTracks;
+    return tracks;
 }
 
 async function getAlbums(accessToken, albumIds) {
@@ -85,7 +92,6 @@ async function getAlbums(accessToken, albumIds) {
                 id: album.id,
                 trackIds: album.tracks.items.map(track => track.id)
             };
-            console.log(JSON.stringify(albumData));
             await saveAlbumData(album.id, albumData);
             albums.push(albumData);
         }
@@ -97,7 +103,7 @@ async function getAlbums(accessToken, albumIds) {
 async function getLikedAlbums(accessToken) {
     const limit = 50;
     let offset = 0;
-    let allAlbums = [];
+    let albums = [];
 
     while (true) {
         const data = await fetchWithDelay(`${API_BASE_URL}/me/albums?offset=${offset}&limit=${limit}`, {
@@ -105,8 +111,14 @@ async function getLikedAlbums(accessToken) {
                 'Authorization': 'Bearer ' + accessToken
             }
         });
-
-        allAlbums = allAlbums.concat(data.items);
+        for (let album of data.items) {
+            const albumData = {
+                id: album.id,
+                trackIds: album.tracks.items.map(track => track.id)
+            };
+            await saveAlbumData(album.id, albumData);
+            albums.push(albumData);
+        }
 
         if (data.next) {
             offset += limit;
@@ -115,7 +127,7 @@ async function getLikedAlbums(accessToken) {
         }
     }
 
-    return allAlbums;
+    return albums;
 }
 
 async function getTracks(accessToken, trackIds) {
