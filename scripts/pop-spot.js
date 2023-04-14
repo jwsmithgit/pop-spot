@@ -86,6 +86,32 @@ async function getLikedAlbums(accessToken) {
     return allAlbums;
 }
 
+async function getTracks(accessToken, trackIds) {
+    let i, j, chunk, response;
+    const trackData = {};
+
+    for (i = 0, j = trackIds.length; i < j; i += 100) {
+        chunk = trackIds.slice(i, i + 100);
+        response = await fetch(`https://api.spotify.com/v1/tracks?ids=${chunk.join(',')}`, {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to retrieve track data: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        data.tracks.forEach((track) => {
+            trackData[track.id] = track;
+        });
+    }
+
+    return trackData;
+}
+
 function getPopularTracks(tracks) {
     const minPopularity = Math.min(...tracks.map(track => track.popularity));
     const maxPopularity = Math.max(...tracks.map(track => track.popularity));
@@ -167,12 +193,12 @@ export async function execute(accessToken) {
     console.log(JSON.stringify(likedTracks));
     let likedTrackAlbumIds = makeDistinct(likedTracks.map(track => track.track.album.id));
     // console.log('All albums: ' + JSON.stringify(likedTrackAlbumIds));
-    let allAlbums = await getAlbumsByIds(likedTrackAlbumIds);//likedAlbums.concat(await getAlbumsByIds(likedTrackAlbumIds));
+    let allAlbums = await getAlbumsByIds(accessToken, likedTrackAlbumIds);//likedAlbums.concat(await getAlbumsByIds(likedTrackAlbumIds));
     // console.log('All albums: ' + JSON.stringify(allAlbums));
 
     let allAlbumTrackIds = makeDistinct(allAlbums.flatMap(album => album.album.trackIds));
     console.log('All albums: ' + JSON.stringify(allAlbumTrackIds));
-    let allAlbumTracks = getTracks(allAlbumTrackIds);
+    let allAlbumTracks = getTracks(accessToken, allAlbumTrackIds);
     console.log('All albums: ' + JSON.stringify(allAlbumTracks));
     let allAlbumTracksByAlbumId = groupTracksByAlbum(allAlbumTracks);
     console.log('All albums: ' + JSON.stringify(allAlbumTracksByAlbumId));
