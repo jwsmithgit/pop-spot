@@ -1,28 +1,28 @@
 import redis from 'redis';
-import { promisify } from 'util';
 
 class RedisPool {
   constructor({ url, maxConnections = 20 }) {
     this.url = url;
     this.maxConnections = maxConnections;
     this.pool = [];
-    this.createClient = promisify(redis.createClient);
   }
 
   async acquire() {
     console.log('Acquiring client from pool (pool size: ' + this.pool.length + ')');
     if (this.pool.length < this.maxConnections) {
-      const client = await this.createClient({ url: this.url });
+      const client = redis.createClient({ url: this.url });
       this.pool.push(client);
       console.log(`New connection added to pool (pool size: ${this.pool.length})`);
     }
 
     const client = this.pool.pop();
+    await client.connect();
     console.log('Acquired client from pool (pool size: ' + this.pool.length + ')');
     return client;
   }
 
   release(client) {
+    client.quit();
     this.pool.push(client);
     console.log(`Connection returned to pool (pool size: ${this.pool.length})`);
   }
@@ -30,15 +30,9 @@ class RedisPool {
 
 const pool = new RedisPool({ url: process.env.REDIS_URL });
 
-const getClient = () => {
-  return new Promise((resolve, reject) => {
-    pool.acquire((err, client) => {
-      if (err) {
-        return reject(err);
-      }
-      return resolve(client);
-    });
-  });
+const getClient = async () => {
+  const client = await pool.acquire();
+  return client;
 };
 
 const releaseClient = (client) => {
