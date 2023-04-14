@@ -3,20 +3,24 @@ const API_BASE_URL = 'https://api.spotify.com/v1';
 
 let delay = 1000;
 async function fetchWithDelay(call, data) {
+    await new Promise(resolve => setTimeout(resolve, delay));
+
     const response = await fetch(call, data);
+    const data = await response.json();
 
     if (!response.ok) {
-      console.log(JSON.stringify(response));
-      if (response.status === 429) {
-        delay = Math.min(delay * 2, 60000); // Set a maximum delay of 1 minute
-        await new Promise(resolve => setTimeout(resolve, delay));
-        return fetchWithDelay(call, data);
-      }
-      throw new Error(`Failed to get liked songs: ${data.error}`);
+        console.log(JSON.stringify(data));
+
+        if (response.status === 429) {
+            delay *= 2;
+            return fetchWithDelay(call, data);
+        }
+
+        throw new Error(`Request failed with status ${response.status}: ${response.statusText}`);
     }
 
-    delay = Math.max(1000, delay * 0.5);
-    return response;
+    delay = Math.max(defaultDelay, delay * 0.5);
+    return data;
 }
 
 async function getLikedTracks(accessToken) {
@@ -25,13 +29,12 @@ async function getLikedTracks(accessToken) {
     let allTracks = [];
 
     while (true) {
-        const response = await fetchWithDelay(`${API_BASE_URL}/me/tracks?offset=${offset}&limit=${limit}`, {
+        const data = await fetchWithDelay(`${API_BASE_URL}/me/tracks?offset=${offset}&limit=${limit}`, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`
             }
         });
 
-        const data = await response.json()
         allTracks = allTracks.concat(data.items);
 
         if (data.next) {
@@ -53,12 +56,11 @@ async function getAlbumsByIds(accessToken, albumIds) {
 
     const albums = [];
     for (let i = 0; i < albumChunks.length; i++) {
-        const response = await fetchWithDelay(`${API_BASE_URL}/albums?ids=${albumChunks[i].join(',')}`, {
+        const data = await fetchWithDelay(`${API_BASE_URL}/albums?ids=${albumChunks[i].join(',')}`, {
             headers: {
                 'Authorization': 'Bearer ' + accessToken
             }
         });
-        const data = await response.json();
         albums.push(...data.albums);
     }
 
@@ -71,13 +73,12 @@ async function getLikedAlbums(accessToken) {
     let allAlbums = [];
 
     while (true) {
-        const response = await fetchWithDelay(`${API_BASE_URL}/me/albums?offset=${offset}&limit=${limit}`, {
+        const data = await fetchWithDelay(`${API_BASE_URL}/me/albums?offset=${offset}&limit=${limit}`, {
             headers: {
                 'Authorization': 'Bearer ' + accessToken
             }
         });
 
-        const data = await response.json();
         allAlbums = allAlbums.concat(data.items);
 
         if (data.next) {
@@ -91,18 +92,17 @@ async function getLikedAlbums(accessToken) {
 }
 
 async function getTracks(accessToken, trackIds) {
-    let i, j, chunk, response;
+    let i, j, chunk, data;
     const trackData = {};
 
     for (i = 0, j = trackIds.length; i < j; i += 100) {
         chunk = trackIds.slice(i, i + 100);
-        response = await fetchWithDelay(`https://api.spotify.com/v1/tracks?ids=${chunk.join(',')}`, {
+        data = await fetchWithDelay(`https://api.spotify.com/v1/tracks?ids=${chunk.join(',')}`, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`
             }
         });
 
-        const data = await response.json();
         data.tracks.forEach((track) => {
             trackData[track.id] = track;
         });
@@ -120,7 +120,7 @@ function getPopularTracks(tracks) {
 }
 
 async function createPlaylist(accessToken, name, description, trackUris) {
-    const response = await fetchWithDelay(`${API_BASE_URL}/me/playlists`, {
+    const data = await fetchWithDelay(`${API_BASE_URL}/me/playlists`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${accessToken}`,
@@ -132,7 +132,6 @@ async function createPlaylist(accessToken, name, description, trackUris) {
         })
     });
 
-    const data = await response.json();
     const playlistId = data.id;
 
     // Divide the track URIs into chunks of 100
