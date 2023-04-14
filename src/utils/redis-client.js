@@ -45,53 +45,31 @@ const releaseClient = (client) => {
 // Save album data by album ID
 const saveAlbumData = async (albumId, data) => {
   const client = await getClient();
-  client.set(`album:${albumId}`, JSON.stringify(data), (err) => {
-    if (err) {
-      console.error('Error saving album data:', err);
-    }
-    releaseClient(client);
-  });
+  await client.set(`album:${albumId}`, JSON.stringify(data));
+  releaseClient(client);
 };
 
 // Retrieve album data by album ID
 const getAlbumData = async (albumId) => {
   const client = await getClient();
-  return new Promise((resolve, reject) => {
-    client.get(`album:${albumId}`, (err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(JSON.parse(data));
-      }
-      releaseClient(client);
-    });
-  });
+  const data = await client.get(`album:${albumId}`);
+  client.release();
+  return JSON.parse(data);
 };
 
 // Save track data by track ID
 const saveTrackData = async (trackId, data) => {
   const client = await getClient();
-  client.set(`track:${trackId}`, JSON.stringify(data), (err) => {
-    if (err) {
-      console.error('Error saving track data:', err);
-    }
-    releaseClient(client);
-  });
+  await client.set(`track:${trackId}`, JSON.stringify(data));
+  client.release();
 };
 
 // Retrieve track data by track ID
 const getTrackData = async (trackId) => {
   const client = await getClient();
-  return new Promise((resolve, reject) => {
-    client.get(`track:${trackId}`, (err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(JSON.parse(data));
-      }
-      releaseClient(client);
-    });
-  });
+  const data = await client.get(`track:${trackId}`);
+  client.release();
+  return JSON.parse(data);
 };
 
 export { saveAlbumData, getAlbumData, saveTrackData, getTrackData };

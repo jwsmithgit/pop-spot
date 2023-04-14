@@ -60,7 +60,7 @@ async function getAlbums(accessToken, albumIds) {
     const queryAlbums = [];
 
     for (let albumId of albumIds) {
-        const albumData = getAlbumData(albumId);
+        const albumData = await getAlbumData(albumId);
         if (albumData) {
             albums.push(albumData);
         } else {
@@ -81,7 +81,7 @@ async function getAlbums(accessToken, albumIds) {
             },
         });
         for (let album of data.albums) {
-            saveAlbumData(album.id, album);
+            await saveAlbumData(album.id, album);
             albums.push(album);
         }
     }
@@ -118,7 +118,7 @@ async function getTracks(accessToken, trackIds) {
     const queryTracks = [];
 
     for (let trackId of trackIds) {
-        const trackData = getTrackData(trackId);
+        const trackData = await getTrackData(trackId);
         if (trackData) {
             console.log('track data: ' + trackData)
             console.log('track data: ' + JSON.stringify(trackData))
@@ -141,7 +141,7 @@ async function getTracks(accessToken, trackIds) {
             },
         });
         for (let track of data.tracks) {
-            saveTrackData(track.id, track);
+            await saveTrackData(track.id, track);
             tracks.push(track);
         }
     }
