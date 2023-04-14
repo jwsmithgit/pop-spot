@@ -182,7 +182,7 @@ export async function execute(accessToken) {
     let likedTrackAlbumIds = makeDistinct(likedTracks.map(track => track.track.album.id));
     let allAlbums = await getAlbumsByIds(accessToken, likedTrackAlbumIds);//likedAlbums.concat(await getAlbumsByIds(likedTrackAlbumIds));
 
-    let allAlbumTrackIds = makeDistinct(allAlbums.flatMap(album => album.album.trackIds));
+    let allAlbumTrackIds = makeDistinct(allAlbums.flatMap(album => album.trackIds));
     let allAlbumTracks = getTracks(accessToken, allAlbumTrackIds);
     let allAlbumTracksByAlbumId = groupTracksByAlbum(allAlbumTracks);
     console.log('All albums: ' + JSON.stringify(allAlbumTracksByAlbumId));
