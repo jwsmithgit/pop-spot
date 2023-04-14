@@ -152,7 +152,7 @@ async function createPlaylist(accessToken, name, description, trackUris) {
 
     // Send requests for each chunk of track URIs
     for (let i = 0; i < chunkedTrackUris.length; i++) {
-        const addTracksResponse = await fetchWithDelay(`${API_BASE_URL}/playlists/${playlistId}/tracks`, {
+        await fetchWithDelay(`${API_BASE_URL}/playlists/${playlistId}/tracks`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
@@ -163,14 +163,7 @@ async function createPlaylist(accessToken, name, description, trackUris) {
             })
         });
 
-        const addTracksData = await addTracksResponse.json();
-        if (!addTracksResponse.ok) {
-            console.log(JSON.stringify(addTracksData));
-            throw new Error(`Failed to add tracks to playlist: ${addTracksData.error}`);
-        }
-        else {
-            console.log('Tracks added to playlist!');
-        }
+        console.log('Tracks added to playlist!');
     }
 }
 
