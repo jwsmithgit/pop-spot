@@ -111,7 +111,8 @@ async function getLikedAlbums(accessToken) {
                 'Authorization': 'Bearer ' + accessToken
             }
         });
-        for (let album of data.items) {
+
+        for (let album of data.items.map(album => album.album)) {
             const albumData = {
                 id: album.id,
                 trackIds: album.tracks.items.map(track => track.id)
