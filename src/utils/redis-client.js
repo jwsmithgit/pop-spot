@@ -5,6 +5,8 @@ class RedisPool {
     this.url = url;
     this.maxConnections = maxConnections;
     this.pool = [];
+    this.connections = [];
+    this.waiting = [];
   }
 
   async acquire() {
@@ -16,15 +18,36 @@ class RedisPool {
     }
 
     const client = this.pool.pop();
-    await client.connect();
-    console.log('Acquired client from pool (pool size: ' + this.pool.length + ')');
-    return client;
+    if (client)
+    {
+      await client.connect();
+      console.log('Acquired client from pool (pool size: ' + this.pool.length + ')');
+      this.connections.push(client);
+      console.log(`New connection added to connections (connections size: ${this.connections.length})`);
+      return client;
+    }
+    else
+    {
+      console.log(`No available connections, waiting...`);
+      return new Promise((resolve) => {
+        this.waiting.push(resolve);
+      }).then(() => this.acquire());
+    }
   }
 
   release(client) {
     client.quit();
+    const index = this.connections.indexOf(client);
+    if (index !== -1) {
+      this.connections.splice(index, 1);
+      console.log(`Connection removed from connections (connections size: ${this.connections.length})`);
+    }
     this.pool.push(client);
     console.log(`Connection returned to pool (pool size: ${this.pool.length})`);
+    if (this.waiting.length > 0) {
+      const resolve = this.waiting.shift();
+      resolve(this.acquire());
+    }
   }
 }
 
@@ -53,7 +76,7 @@ const getAlbumData = async (albumId) => {
   console.log('have client');
   const data = await client.get(`album:${albumId}`);
   console.log('have data');
-  client.release();
+  releaseClient(client);
   console.log('release');
   return data ? JSON.parse(data) : data;
 };
@@ -62,14 +85,14 @@ const getAlbumData = async (albumId) => {
 const saveTrackData = async (trackId, data) => {
   const client = await getClient();
   await client.set(`track:${trackId}`, JSON.stringify(data));
-  client.release();
+  releaseClient(client);
 };
 
 // Retrieve track data by track ID
 const getTrackData = async (trackId) => {
   const client = await getClient();
   const data = await client.get(`track:${trackId}`);
-  client.release();
+  releaseClient(client);
   return data ? JSON.parse(data) : data;
 };
 
