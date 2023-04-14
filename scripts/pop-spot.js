@@ -8,9 +8,9 @@ async function fetchWithDelay(call, callData) {
     const response = await fetch(call, callData);
     const responseData = await response.json();
 
-    console.log(JSON.stringify(response));
+    console.log('response: ' + JSON.stringify(response));
+    console.log('response data: ' + JSON.stringify(responseData));
     if (!response.ok) {
-
         if (response.status === 429) {
             delay *= 2;
             return fetchWithDelay(call, callData);
@@ -19,7 +19,7 @@ async function fetchWithDelay(call, callData) {
         throw new Error(`Request failed with status ${response.status}: ${response.statusText}`);
     }
 
-    delay = Math.max(delay, delay * 0.5);
+    delay = Math.max(1000, delay * 0.5);
     return responseData;
 }
 
