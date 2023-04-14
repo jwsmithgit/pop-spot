@@ -8,8 +8,8 @@ async function fetchWithDelay(call, callData) {
     const response = await fetch(call, callData);
     const responseData = await response.json();
 
+    console.log(JSON.stringify(response));
     if (!response.ok) {
-        console.log(JSON.stringify(response));
 
         if (response.status === 429) {
             delay *= 2;
@@ -181,18 +181,12 @@ function groupTracksByAlbum(tracks) {
 
 export async function execute(accessToken) {
     // let likedAlbums = await getLikedAlbums(accessToken);
-    // console.log(JSON.stringify(likedAlbums));
     let likedTracks = await getLikedTracks(accessToken);
-    console.log(JSON.stringify(likedTracks));
     let likedTrackAlbumIds = makeDistinct(likedTracks.map(track => track.track.album.id));
-    // console.log('All albums: ' + JSON.stringify(likedTrackAlbumIds));
     let allAlbums = await getAlbumsByIds(accessToken, likedTrackAlbumIds);//likedAlbums.concat(await getAlbumsByIds(likedTrackAlbumIds));
-    // console.log('All albums: ' + JSON.stringify(allAlbums));
 
     let allAlbumTrackIds = makeDistinct(allAlbums.flatMap(album => album.album.trackIds));
-    console.log('All albums: ' + JSON.stringify(allAlbumTrackIds));
     let allAlbumTracks = getTracks(accessToken, allAlbumTrackIds);
-    console.log('All albums: ' + JSON.stringify(allAlbumTracks));
     let allAlbumTracksByAlbumId = groupTracksByAlbum(allAlbumTracks);
     console.log('All albums: ' + JSON.stringify(allAlbumTracksByAlbumId));
 
