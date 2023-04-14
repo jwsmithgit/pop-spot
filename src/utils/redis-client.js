@@ -1,12 +1,11 @@
-import redisPool from 'redis-connection-pool';
+import redisPoolFactory from 'redis-connection-pool';
 
-const redisOptions = {
-  url: process.env.REDIS_URL,
+const pool = redisPoolFactory('myRedisPool', {
   max_clients: 20,
-  perform_check: false,
-};
-
-const pool = redisPool('myRedisPool', redisOptions);
+  redis: {
+    url: process.env.REDIS_URL
+  }
+});
 
 const getClient = () => {
   return new Promise((resolve, reject) => {
