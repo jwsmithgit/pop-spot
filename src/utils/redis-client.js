@@ -1,4 +1,4 @@
-import RedisPool from 'redis-connection-pool';
+import RedisPool from 'redis-pool';
 
 const pool = RedisPool('myRedisPool', {
   url: process.env.REDIS_URL,
