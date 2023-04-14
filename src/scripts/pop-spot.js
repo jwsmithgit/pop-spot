@@ -1,7 +1,6 @@
 import fetch from 'node-fetch';
+import client from '../utils/redis-client.js';
 const API_BASE_URL = 'https://api.spotify.com/v1';
-
-import client from './redis-client.js';
 
 let delay = 1000;
 async function fetchWithDelay(call, callData) {
