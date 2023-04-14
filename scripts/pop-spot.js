@@ -7,7 +7,7 @@ async function fetchWithDelay(call, data) {
 
     if (!response.ok) {
       console.log(JSON.stringify(response));
-      if (response.status === 403) {
+      if (response.status === 429) {
         delay = Math.min(delay * 2, 60000); // Set a maximum delay of 1 minute
         await new Promise(resolve => setTimeout(resolve, delay));
         return fetchWithDelay(call, data);
@@ -31,12 +31,7 @@ async function getLikedTracks(accessToken) {
             }
         });
 
-        const data = await response.json();
-        if (!response.ok) {
-            console.log(JSON.stringify(data));
-            throw new Error(`Failed to get liked songs: ${data.error}`);
-        }
-
+        const data = await response.json()
         allTracks = allTracks.concat(data.items);
 
         if (data.next) {
@@ -64,10 +59,6 @@ async function getAlbumsByIds(accessToken, albumIds) {
             }
         });
         const data = await response.json();
-        if (!response.ok) {
-            console.log(JSON.stringify(data));
-            throw new Error(`Failed to get albums: ${data.error}`);
-        }
         albums.push(...data.albums);
     }
 
@@ -87,11 +78,6 @@ async function getLikedAlbums(accessToken) {
         });
 
         const data = await response.json();
-        if (!response.ok) {
-            console.log(JSON.stringify(data));
-            throw new Error(`Failed to get liked albums: ${data.error}`);
-        }
-
         allAlbums = allAlbums.concat(data.items);
 
         if (data.next) {
@@ -116,12 +102,7 @@ async function getTracks(accessToken, trackIds) {
             }
         });
 
-        if (!response.ok) {
-            throw new Error(`Failed to retrieve track data: ${response.status}`);
-        }
-
         const data = await response.json();
-
         data.tracks.forEach((track) => {
             trackData[track.id] = track;
         });
@@ -152,11 +133,6 @@ async function createPlaylist(accessToken, name, description, trackUris) {
     });
 
     const data = await response.json();
-    if (!response.ok) {
-        console.log(JSON.stringify(data));
-        throw new Error(`Failed to create playlist: ${data.error}`);
-    }
-
     const playlistId = data.id;
 
     // Divide the track URIs into chunks of 100
