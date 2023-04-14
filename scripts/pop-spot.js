@@ -8,9 +8,16 @@ async function fetchWithDelay(call, callData) {
     const response = await fetch(call, callData);
     console.log('response status: ' + response.status);
     if (!response.ok) {
-        if (response.status === 429) {
-            delay = response.headers.get('Retry-After');
-            console.log(delay);
+        if (response.status === 429 && response.headers.has('Retry-After')) {
+            const retryAfter = response.headers.get('Retry-After');
+            let delaySeconds;
+            if (Number.isNaN(Number(retryAfter))) {
+                delaySeconds = Math.ceil((new Date(retryAfter).getTime() - Date.now()) / 1000);
+            } else {
+                delaySeconds = Number(retryAfter);
+            }
+            console.log(`Delaying for ${delaySeconds} seconds`);
+            await new Promise(resolve => setTimeout(resolve, delaySeconds * 1000));
             return fetchWithDelay(call, callData);
         }
 
