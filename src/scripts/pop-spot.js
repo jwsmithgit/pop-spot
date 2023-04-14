@@ -82,9 +82,10 @@ async function getAlbums(accessToken, albumIds) {
         });
         for (let album of data.albums) {
             const albumData = {
-                id: album.album.id,
-                trackIds: album.items.map(track => track.id)
+                id: album.id,
+                trackIds: album.tracks.items.map(track => track.id)
             };
+            console.log(JSON.stringify(albumData));
             await saveAlbumData(album.id, albumData);
             albums.push(albumData);
         }
@@ -124,8 +125,6 @@ async function getTracks(accessToken, trackIds) {
     for (let trackId of trackIds) {
         const trackData = await getTrackData(trackId);
         if (trackData) {
-            console.log('track data: ' + trackData)
-            console.log('track data: ' + JSON.stringify(trackData))
             tracks.push(trackData);
         } else {
             queryTracks.push(trackId);
