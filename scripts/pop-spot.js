@@ -9,7 +9,7 @@ async function fetchWithDelay(call, callData) {
     const responseData = await response.json();
 
     if (!response.ok) {
-        console.log(JSON.stringify(responseData));
+        console.log(JSON.stringify(response));
 
         if (response.status === 429) {
             delay *= 2;
