@@ -7,11 +7,12 @@ const app = express();
 
 app.use(express.static(path.join(process.cwd(), 'public')));
 app.use(session({
-  secret: process.env.APP_SECRET,
-  resave: false,
-  saveUninitialized: true,
+    secret: process.env.APP_SECRET,
+    resave: false,
+    saveUninitialized: true,
 }));
 
+app.use(express.urlencoded({ extended: true }));
 app.use('/', router);
 
 app.listen(process.env.PORT || 3000, () => {

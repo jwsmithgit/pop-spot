@@ -1,6 +1,8 @@
 import fetch from 'node-fetch';
 const API_BASE_URL = 'https://api.spotify.com/v1';
 
+import client from './redis-client.js';
+
 let delay = 1000;
 async function fetchWithDelay(call, callData) {
     await new Promise(resolve => setTimeout(resolve, delay));
@@ -31,9 +33,6 @@ async function fetchWithDelay(call, callData) {
 }
 
 async function getLikedTracks(accessToken) {
-
-    client
-
     const limit = 50;
     let offset = 0;
     let allTracks = [];
@@ -57,21 +56,35 @@ async function getLikedTracks(accessToken) {
     return allTracks;
 }
 
-async function getAlbumsByIds(accessToken, albumIds) {
-    const limit = 50;
-    const albumChunks = [];
-    for (let i = 0; i < albumIds.length; i += limit) {
-        albumChunks.push(albumIds.slice(i, i + limit));
+async function getAlbums(accessToken, albumIds) {
+    const albums = [];
+    const queryAlbums = [];
+
+    for (let albumId of albumIds) {
+        const albumData = await client.getAlbumData(albumId);
+        if (albumData) {
+            albums.push(JSON.parse(albumData));
+        } else {
+            queryAlbums.push(albumId);
+        }
     }
 
-    const albums = [];
+    const limit = 50;
+    const albumChunks = [];
+    for (let i = 0; i < queryAlbums.length; i += limit) {
+        albumChunks.push(queryAlbums.slice(i, i + limit));
+    }
+
     for (let i = 0; i < albumChunks.length; i++) {
         const data = await fetchWithDelay(`${API_BASE_URL}/albums?ids=${albumChunks[i].join(',')}`, {
             headers: {
-                'Authorization': 'Bearer ' + accessToken
-            }
+                'Authorization': 'Bearer ' + accessToken,
+            },
         });
-        albums.push(...data.albums);
+        for (let album of data.albums) {
+            client.saveAlbumData(album.id, JSON.stringify(album));
+            albums.push(album);
+        }
     }
 
     return albums;
@@ -102,23 +115,37 @@ async function getLikedAlbums(accessToken) {
 }
 
 async function getTracks(accessToken, trackIds) {
-    let i, j, chunk, data;
-    const trackData = {};
+    const tracks = [];
+    const queryTracks = [];
 
-    for (i = 0, j = trackIds.length; i < j; i += 100) {
-        chunk = trackIds.slice(i, i + 100);
-        data = await fetchWithDelay(`https://api.spotify.com/v1/tracks?ids=${chunk.join(',')}`, {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
-        });
-
-        data.tracks.forEach((track) => {
-            trackData[track.id] = track;
-        });
+    for (let trackId of trackIds) {
+        const trackData = await client.getTrackData(trackId);
+        if (trackData) {
+            tracks.push(JSON.parse(trackData));
+        } else {
+            queryTracks.push(trackId);
+        }
     }
 
-    return trackData;
+    const limit = 50;
+    const trackChunks = [];
+    for (let i = 0; i < queryTracks.length; i += limit) {
+        trackChunks.push(queryTracks.slice(i, i + limit));
+    }
+
+    for (let chunk of trackChunks) {
+        let data = await fetchWithDelay(`https://api.spotify.com/v1/tracks?ids=${chunk.join(',')}`, {
+            headers: {
+                'Authorization': 'Bearer ' + accessToken,
+            },
+        });
+        for (let track of data.tracks) {
+            client.saveTrackData(track.id, JSON.stringify(track));
+            tracks.push(track);
+        }
+    }
+
+    return tracks;
 }
 
 function getPopularTracks(tracks) {
@@ -171,7 +198,7 @@ function makeDistinct(array) {
     return [...new Set(array)];
 }
 
-function groupTracksByAlbum(tracks) {
+function groupTracksByAlbumId(tracks) {
     return tracks.reduce((result, track) => {
         const albumId = track.album.id;
         if (!result[albumId]) {
@@ -186,16 +213,16 @@ export async function execute(accessToken) {
     let likedAlbums = await getLikedAlbums(accessToken);
     let likedTracks = await getLikedTracks(accessToken);
     let likedTrackAlbumIds = makeDistinct(likedTracks.map(track => track.track.album.id));
-    let allAlbums = likedAlbums.concat(await getAlbumsByIds(likedTrackAlbumIds));
+    let allAlbums = likedAlbums.concat(await getAlbums(likedTrackAlbumIds));
 
-    let allAlbumTrackIds = makeDistinct(allAlbums.flatMap(album => album.trackIds));
-    let allAlbumTracks = getTracks(accessToken, allAlbumTrackIds);
-    let allAlbumTracksByAlbumId = groupTracksByAlbum(allAlbumTracks);
-    console.log('All albums: ' + JSON.stringify(allAlbumTracksByAlbumId));
+    let allTrackIds = makeDistinct(allAlbums.flatMap(album => album.trackIds));
+    let allTracks = getTracks(accessToken, allTrackIds);
+    let allTracksByAlbumId = groupTracksByAlbumId(allTracks);
+    console.log('All albums: ' + JSON.stringify(allTracksByAlbumId));
 
     let popularTracksByAlbumId = {};
-    for (let albumId in allAlbumTracksByAlbumId) {
-        popularTracksByAlbumId[albumId] = getPopularTracks(allAlbumTracksByAlbumId[albumId]);
+    for (let albumId in allTracksByAlbumId) {
+        popularTracksByAlbumId[albumId] = getPopularTracks(allTracksByAlbumId[albumId]);
     }
     let popularTracks = Object.values(popularTracksByAlbumId).flat();
     console.log('Popular tracks: ' + JSON.stringify(popularTracks));
