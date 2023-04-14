@@ -7,9 +7,11 @@ async function fetchWithDelay(call, callData) {
 
     const response = await fetch(call, callData);
     console.log('response: ' + JSON.stringify(response));
+    console.log('response status: ' + response.status);
+    console.log('response headers: ' + JSON.stringify(response.headers));
     if (!response.ok) {
         if (response.status === 429) {
-            delay *= 2;
+            delay = response.headers.get('Retry-After');
             return fetchWithDelay(call, callData);
         }
 
