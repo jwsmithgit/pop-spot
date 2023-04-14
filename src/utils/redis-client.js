@@ -41,7 +41,6 @@ class RedisPool {
   }
 
   release(client) {
-    client.quit();
     const index = this.connections.indexOf(client);
     if (index !== -1) {
       this.connections.splice(index, 1);
@@ -49,6 +48,7 @@ class RedisPool {
     }
     this.pool.push(client);
     log(`Connection returned to pool (pool size: ${this.pool.length})`);
+    client.quit();
     if (this.waiting.length > 0) {
       const resolve = this.waiting.shift();
       resolve(this.acquire());
