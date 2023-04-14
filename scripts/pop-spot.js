@@ -123,10 +123,11 @@ async function getAlbumTracks(accessToken, albumId) {
 }
 
 function findPopularTracks(tracks) {
+    const minPopularity = Math.min(...tracks.map(track => track.popularity));
     const maxPopularity = Math.max(...tracks.map(track => track.popularity));
-    const halfMaxPopularity = maxPopularity * 0.9;
-
-    return tracks.filter(track => track.popularity >= halfMaxPopularity);
+    if (minPopularity == maxPopularity) return [];
+    const popularity = minPopularity + (maxPopularity - minPopularity) * 0.9;
+    return tracks.filter(track => track.popularity >= popularity);
 }
 
 async function createPlaylist(accessToken, name, description, trackUris) {
