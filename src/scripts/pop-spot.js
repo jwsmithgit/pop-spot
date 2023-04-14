@@ -120,6 +120,7 @@ async function getTracks(accessToken, trackIds) {
     for (let trackId of trackIds) {
         const trackData = getTrackData(trackId);
         if (trackData) {
+            console.log('track data: ' + trackData)
             console.log('track data: ' + JSON.stringify(trackData))
             tracks.push(trackData);
         } else {
