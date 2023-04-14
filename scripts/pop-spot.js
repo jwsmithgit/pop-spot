@@ -165,12 +165,12 @@ export async function execute(accessToken) {
     // console.log(JSON.stringify(likedAlbums));
     let likedTracks = await getLikedTracks(accessToken);
     console.log(JSON.stringify(likedTracks));
-    let likedTrackAlbumIds = makeDistinct(likedTracks.map(track => track.album.id));
+    let likedTrackAlbumIds = makeDistinct(likedTracks.map(track => track.track.album.id));
     // console.log('All albums: ' + JSON.stringify(likedTrackAlbumIds));
     let allAlbums = await getAlbumsByIds(likedTrackAlbumIds);//likedAlbums.concat(await getAlbumsByIds(likedTrackAlbumIds));
     // console.log('All albums: ' + JSON.stringify(allAlbums));
 
-    let allAlbumTrackIds = makeDistinct(allAlbums.flatMap(album => album.trackIds));
+    let allAlbumTrackIds = makeDistinct(allAlbums.flatMap(album => album.album.trackIds));
     console.log('All albums: ' + JSON.stringify(allAlbumTrackIds));
     let allAlbumTracks = getTracks(allAlbumTrackIds);
     console.log('All albums: ' + JSON.stringify(allAlbumTracks));
