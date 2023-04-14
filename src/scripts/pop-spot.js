@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { saveAlbumData, getAlbumData, saveTrackData, getTrackData } from '../utils/redis-client.js';
+import { redisClient } from '../utils/redis-client.js';
 const API_BASE_URL = 'https://api.spotify.com/v1';
 
 let delay = 1000;
@@ -48,7 +48,7 @@ async function getLikedTracks(accessToken) {
                 id: track.id,
                 popularity: track.popularity
             };
-            await saveTrackData(track.id, trackData);
+            await redisClient.setTrackData(track.id, trackData);
             tracks.push(trackData);
         }
 
@@ -67,7 +67,7 @@ async function getAlbums(accessToken, albumIds) {
     const queryAlbums = [];
 
     for (let albumId of albumIds) {
-        const albumData = await getAlbumData(albumId);
+        const albumData = await redisClient.getAlbumData(albumId);
         if (albumData) {
             albums.push(albumData);
         } else {
@@ -92,7 +92,7 @@ async function getAlbums(accessToken, albumIds) {
                 id: album.id,
                 trackIds: album.tracks.items.map(track => track.id)
             };
-            await saveAlbumData(album.id, albumData);
+            await redisClient.setAlbumData(album.id, albumData);
             albums.push(albumData);
         }
     }
@@ -117,7 +117,7 @@ async function getLikedAlbums(accessToken) {
                 id: album.id,
                 trackIds: album.tracks.items.map(track => track.id)
             };
-            await saveAlbumData(album.id, albumData);
+            await redisClient.setAlbumData(album.id, albumData);
             albums.push(albumData);
         }
 
@@ -136,7 +136,7 @@ async function getTracks(accessToken, trackIds) {
     const queryTracks = [];
 
     for (let trackId of trackIds) {
-        const trackData = await getTrackData(trackId);
+        const trackData = await redisClient.getTrackData(trackId);
         if (trackData) {
             tracks.push(trackData);
         } else {
@@ -161,7 +161,7 @@ async function getTracks(accessToken, trackIds) {
                 id: track.id,
                 popularity: track.popularity
             };
-            await saveTrackData(track.id, trackData);
+            await redisClient.setTrackData(track.id, trackData);
             tracks.push(trackData);
         }
     }
