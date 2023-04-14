@@ -4,7 +4,7 @@ const API_BASE_URL = 'https://api.spotify.com/v1';
 async function getLikedTracks(accessToken) {
     const limit = 50;
     let offset = 0;
-    let allSongs = [];
+    let allTracks = [];
 
     while (true) {
         const response = await fetch(`${API_BASE_URL}/me/tracks?offset=${offset}&limit=${limit}`, {
@@ -19,7 +19,7 @@ async function getLikedTracks(accessToken) {
             throw new Error(`Failed to get liked songs: ${data.error}`);
         }
 
-        allSongs = allSongs.concat(data.items);
+        allTracks = allTracks.concat(data.items);
 
         if (data.next) {
             offset += limit;
@@ -28,7 +28,7 @@ async function getLikedTracks(accessToken) {
         }
     }
 
-    return allSongs;
+    return allTracks;
 }
 
 async function getAlbumsByIds(accessToken, albumIds) {
@@ -84,32 +84,6 @@ async function getLikedAlbums(accessToken) {
     }
 
     return allAlbums;
-}
-
-async function getTracksByAlbumId(trackIds, accessToken) {
-    let i, j, chunk, response;
-    const trackData = {};
-
-    for (i = 0, j = trackIds.length; i < j; i += 100) {
-        chunk = trackIds.slice(i, i + 100);
-        response = await fetch(`https://api.spotify.com/v1/tracks?ids=${chunk.join(',')}`, {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to retrieve track data: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        data.tracks.forEach((track) => {
-            trackData[track.id] = track;
-        });
-    }
-
-    return trackData;
 }
 
 function getPopularTracks(tracks) {
@@ -187,14 +161,14 @@ function groupTracksByAlbum(tracks) {
 }
 
 export async function execute(accessToken) {
-    let likedAlbums = await getLikedAlbums(accessToken);
-    console.log(JSON.stringify(likedAlbums));
+    // let likedAlbums = await getLikedAlbums(accessToken);
+    // console.log(JSON.stringify(likedAlbums));
     let likedTracks = await getLikedTracks(accessToken);
     console.log(JSON.stringify(likedTracks));
     let likedTrackAlbumIds = makeDistinct(likedTracks.map(track => track.album.id));
-    console.log('All albums: ' + JSON.stringify(likedTrackAlbumIds));
-    let allAlbums = likedAlbums.concat(await getAlbumsByIds(likedTrackAlbumIds));
-    console.log('All albums: ' + JSON.stringify(allAlbums));
+    // console.log('All albums: ' + JSON.stringify(likedTrackAlbumIds));
+    let allAlbums = await getAlbumsByIds(likedTrackAlbumIds);//likedAlbums.concat(await getAlbumsByIds(likedTrackAlbumIds));
+    // console.log('All albums: ' + JSON.stringify(allAlbums));
 
     let allAlbumTrackIds = makeDistinct(allAlbums.flatMap(album => album.trackIds));
     console.log('All albums: ' + JSON.stringify(allAlbumTrackIds));
