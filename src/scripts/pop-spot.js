@@ -214,20 +214,20 @@ export async function execute(accessToken) {
     let likedTracks = await getLikedTracks(accessToken);
     let likedTrackAlbumIds = makeDistinct(likedTracks.map(track => track.track.album.id));
     let allAlbums = likedAlbums.concat(await getAlbums(accessToken, likedTrackAlbumIds));
-    console.log('All albums: ' + JSON.stringify(allAlbums));
+    console.log('All albums: ' + JSON.stringify(allAlbums).substring(0, 100));
 
     let allTrackIds = makeDistinct(allAlbums.flatMap(album => album.trackIds));
     let allTracks = getTracks(accessToken, allTrackIds);
-    console.log('All tracks: ' + JSON.stringify(allTracks));
+    console.log('All tracks: ' + JSON.stringify(allTracks).substring(0, 100));
     let allTracksByAlbumId = groupTracksByAlbumId(allTracks);
-    console.log('All albums: ' + JSON.stringify(allTracksByAlbumId));
+    console.log('All albums: ' + JSON.stringify(allTracksByAlbumId).substring(0, 100));
 
     let popularTracksByAlbumId = {};
     for (let albumId in allTracksByAlbumId) {
         popularTracksByAlbumId[albumId] = getPopularTracks(allTracksByAlbumId[albumId]);
     }
     let popularTracks = Object.values(popularTracksByAlbumId).flat();
-    console.log('Popular tracks: ' + JSON.stringify(popularTracks));
+    console.log('Popular tracks: ' + JSON.stringify(popularTracks).substring(0, 100));
 
     await createPlaylist(accessToken, 'Pop Spot', 'Liked Album Popular Songs', popularTracks.map(track => track.uri));
 }
