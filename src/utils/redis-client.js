@@ -1,6 +1,6 @@
 import redisPoolFactory from 'redis-connection-pool';
 
-const pool = redisPoolFactory('myRedisPool', {
+const pool = await redisPoolFactory('myRedisPool', {
   max_clients: 20,
   redis: {
     url: process.env.REDIS_URL
