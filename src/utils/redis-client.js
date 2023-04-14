@@ -31,8 +31,7 @@ const saveAlbumData = (albumId, data) => {
 const getAlbumData = (albumId, callback) => {
   if (!client.connected) connect();
   client.get(`album:${albumId}`, (err, data) => {
-    if (err) throw err;
-    callback(JSON.parse(data));
+    if (!err) callback(JSON.parse(data));
   });
 };
 
@@ -46,8 +45,7 @@ const saveTrackData = (trackId, data) => {
 const getTrackData = (trackId, callback) => {
   if (!client.connected) connect();
   client.get(`track:${trackId}`, (err, data) => {
-    if (err) throw err;
-    callback(JSON.parse(data));
+    if (!err) callback(JSON.parse(data));
   });
 };
 
