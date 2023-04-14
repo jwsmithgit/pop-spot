@@ -54,7 +54,7 @@ const getAlbumData = async (albumId) => {
   const client = await getClient();
   const data = await client.get(`album:${albumId}`);
   client.release();
-  return JSON.parse(data);
+  return data ? JSON.parse(data) : data;
 };
 
 // Save track data by track ID
@@ -69,7 +69,7 @@ const getTrackData = async (trackId) => {
   const client = await getClient();
   const data = await client.get(`track:${trackId}`);
   client.release();
-  return JSON.parse(data);
+  return data ? JSON.parse(data) : data;
 };
 
 export { saveAlbumData, getAlbumData, saveTrackData, getTrackData };
