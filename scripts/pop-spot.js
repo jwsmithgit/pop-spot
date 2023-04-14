@@ -2,25 +2,25 @@ import fetch from 'node-fetch';
 const API_BASE_URL = 'https://api.spotify.com/v1';
 
 let delay = 1000;
-async function fetchWithDelay(call, data) {
+async function fetchWithDelay(call, callData) {
     await new Promise(resolve => setTimeout(resolve, delay));
 
-    const response = await fetch(call, data);
-    const data = await response.json();
+    const response = await fetch(call, callData);
+    const responseData = await response.json();
 
     if (!response.ok) {
-        console.log(JSON.stringify(data));
+        console.log(JSON.stringify(responseData));
 
         if (response.status === 429) {
             delay *= 2;
-            return fetchWithDelay(call, data);
+            return fetchWithDelay(call, callData);
         }
 
         throw new Error(`Request failed with status ${response.status}: ${response.statusText}`);
     }
 
     delay = Math.max(defaultDelay, delay * 0.5);
-    return data;
+    return responseData;
 }
 
 async function getLikedTracks(accessToken) {
