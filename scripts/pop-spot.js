@@ -5,6 +5,8 @@ let delay = 1000;
 async function fetchWithDelay(call, callData) {
     await new Promise(resolve => setTimeout(resolve, delay));
 
+    console.log('calling: ' + JSON.stringify(call));
+    console.log('with data: ' + JSON.stringify(callData));
     const response = await fetch(call, callData);
     console.log('response status: ' + response.status);
     if (!response.ok) {
