@@ -19,7 +19,7 @@ async function fetchWithDelay(call, callData) {
         throw new Error(`Request failed with status ${response.status}: ${response.statusText}`);
     }
 
-    delay = Math.max(defaultDelay, delay * 0.5);
+    delay = Math.max(delay, delay * 0.5);
     return responseData;
 }
 
