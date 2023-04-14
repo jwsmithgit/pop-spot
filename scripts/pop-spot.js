@@ -1,13 +1,31 @@
 import fetch from 'node-fetch';
 const API_BASE_URL = 'https://api.spotify.com/v1';
 
+const delay = 1000;
+async function fetchWithDelay(call, data) {
+    const response = await fetch(call, data);
+
+    if (!response.ok) {
+      console.log(JSON.stringify(response));
+      if (response.status === 403) {
+        delay = Math.min(delay * 2, 60000); // Set a maximum delay of 1 minute
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return fetchWithDelay(call, data);
+      }
+      throw new Error(`Failed to get liked songs: ${data.error}`);
+    }
+
+    delay = Math.max(1000, delay * 0.5);
+    return response;
+}
+
 async function getLikedTracks(accessToken) {
     const limit = 50;
     let offset = 0;
     let allTracks = [];
 
     while (true) {
-        const response = await fetch(`${API_BASE_URL}/me/tracks?offset=${offset}&limit=${limit}`, {
+        const response = await fetchWithDelay(`${API_BASE_URL}/me/tracks?offset=${offset}&limit=${limit}`, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`
             }
@@ -40,7 +58,7 @@ async function getAlbumsByIds(accessToken, albumIds) {
 
     const albums = [];
     for (let i = 0; i < albumChunks.length; i++) {
-        const response = await fetch(`${API_BASE_URL}/albums?ids=${albumChunks[i].join(',')}`, {
+        const response = await fetchWithDelay(`${API_BASE_URL}/albums?ids=${albumChunks[i].join(',')}`, {
             headers: {
                 'Authorization': 'Bearer ' + accessToken
             }
@@ -62,7 +80,7 @@ async function getLikedAlbums(accessToken) {
     let allAlbums = [];
 
     while (true) {
-        const response = await fetch(`${API_BASE_URL}/me/albums?offset=${offset}&limit=${limit}`, {
+        const response = await fetchWithDelay(`${API_BASE_URL}/me/albums?offset=${offset}&limit=${limit}`, {
             headers: {
                 'Authorization': 'Bearer ' + accessToken
             }
@@ -92,7 +110,7 @@ async function getTracks(accessToken, trackIds) {
 
     for (i = 0, j = trackIds.length; i < j; i += 100) {
         chunk = trackIds.slice(i, i + 100);
-        response = await fetch(`https://api.spotify.com/v1/tracks?ids=${chunk.join(',')}`, {
+        response = await fetchWithDelay(`https://api.spotify.com/v1/tracks?ids=${chunk.join(',')}`, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`
             }
@@ -121,7 +139,7 @@ function getPopularTracks(tracks) {
 }
 
 async function createPlaylist(accessToken, name, description, trackUris) {
-    const response = await fetch(`${API_BASE_URL}/me/playlists`, {
+    const response = await fetchWithDelay(`${API_BASE_URL}/me/playlists`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${accessToken}`,
@@ -149,7 +167,7 @@ async function createPlaylist(accessToken, name, description, trackUris) {
 
     // Send requests for each chunk of track URIs
     for (let i = 0; i < chunkedTrackUris.length; i++) {
-        const addTracksResponse = await fetch(`${API_BASE_URL}/playlists/${playlistId}/tracks`, {
+        const addTracksResponse = await fetchWithDelay(`${API_BASE_URL}/playlists/${playlistId}/tracks`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
@@ -204,12 +222,11 @@ export async function execute(accessToken) {
     console.log('All albums: ' + JSON.stringify(allAlbumTracksByAlbumId));
 
     let popularTracksByAlbumId = {};
-    for (let albumId in allAlbumTracksByAlbumId)
-    {
+    for (let albumId in allAlbumTracksByAlbumId) {
         popularTracksByAlbumId[albumId] = getPopularTracks(allAlbumTracksByAlbumId[albumId]);
     }
     let popularTracks = Object.values(popularTracksByAlbumId).flat();
     console.log('Popular tracks: ' + JSON.stringify(popularTracks));
-    
+
     await createPlaylist(accessToken, 'Pop Spot', 'Liked Album Popular Songs', popularTracks.map(track => track.uri));
 }
