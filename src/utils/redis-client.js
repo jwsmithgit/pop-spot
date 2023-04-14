@@ -51,9 +51,13 @@ const saveAlbumData = async (albumId, data) => {
 
 // Retrieve album data by album ID
 const getAlbumData = async (albumId) => {
+  console.log('asking for album: ' + albumId);
   const client = await getClient();
+  console.log('have client');
   const data = await client.get(`album:${albumId}`);
+  console.log('have data');
   client.release();
+  console.log('release');
   return data ? JSON.parse(data) : data;
 };
 
