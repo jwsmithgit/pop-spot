@@ -1,11 +1,31 @@
-import redisPoolFactory from 'redis-connection-pool';
+import redis from 'redis';
+import { promisify } from 'util';
 
-const pool = await redisPoolFactory('myRedisPool', {
-  max_clients: 20,
-  redis: {
-    url: process.env.REDIS_URL
+class RedisPool {
+  constructor({ url, maxConnections = 20 }) {
+    this.url = url;
+    this.maxConnections = maxConnections;
+    this.pool = [];
+    this.createClient = promisify(redis.createClient);
   }
-});
+
+  async acquire() {
+    if (this.pool.length < this.maxConnections) {
+      const client = await this.createClient(this.url);
+      this.pool.push(client);
+      console.log(`New connection added to pool (pool size: ${this.pool.length})`);
+    }
+
+    return this.pool.pop();
+  }
+
+  release(client) {
+    this.pool.push(client);
+    console.log(`Connection returned to pool (pool size: ${this.pool.length})`);
+  }
+}
+
+const pool = new RedisPool({ url: process.env.REDIS_URL });
 
 const getClient = () => {
   return new Promise((resolve, reject) => {
