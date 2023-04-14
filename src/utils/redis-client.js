@@ -10,6 +10,10 @@ client.on('error', (err) => {
   console.error('Redis error:', err);
 });
 
+client.on('end', () => {
+  console.log('Redis client disconnected');
+});
+
 // Save album data by album ID
 const saveAlbumData = (albumId, data) => {
   client.set(`album:${albumId}`, JSON.stringify(data));
