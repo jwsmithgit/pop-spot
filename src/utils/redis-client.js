@@ -12,7 +12,7 @@ class RedisPool {
   async acquire() {
     console.log('Acquiring client from pool (pool size: ' + this.pool.length + ')');
     if (this.pool.length < this.maxConnections) {
-      const client = await this.createClient({ host: this.url });
+      const client = await this.createClient({ url: this.url });
       this.pool.push(client);
       console.log(`New connection added to pool (pool size: ${this.pool.length})`);
     }
