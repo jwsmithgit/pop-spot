@@ -8,7 +8,7 @@ import {execute} from './scripts/pop-spot.js'
 const app = express();
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 const clientId = 'a02434801a964928b903cf894c58151e';
-const clientSecret = '6ee1a0e15d7b45c09e0306a4cbba8a5b';
+const clientSecret = '88aa185cd0c94b50beec7a0f908e2e7e';
 const redirectUri = 'https://warm-wave-05889.herokuapp.com/callback';
 
 app.use(express.static(path.join(__dirname, 'public')));
