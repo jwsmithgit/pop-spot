@@ -27,7 +27,7 @@ async function fetchWithDelay(call, callData) {
         throw new Error(`Request failed with status ${response.status}: ${response.statusText}`);
     }
 
-    delay = Math.max(1000, delay * 0.5);
+    delay = Math.max(500, delay * 0.5);
     return await response.json();
 }
 
@@ -81,8 +81,12 @@ async function getAlbums(accessToken, albumIds) {
             },
         });
         for (let album of data.albums) {
-            await saveAlbumData(album.id, album);
-            albums.push(album);
+            const albumData = {
+                id: album.id,
+                trackIds: album.tracks.items.map(track => track.id)
+            };
+            await saveAlbumData(album.id, albumData);
+            albums.push(albumData);
         }
     }
 
@@ -141,8 +145,12 @@ async function getTracks(accessToken, trackIds) {
             },
         });
         for (let track of data.tracks) {
-            await saveTrackData(track.id, track);
-            tracks.push(track);
+            const trackData = {
+                id: track.id,
+                popularity: track.popularity
+            };
+            await saveTrackData(track.id, trackData);
+            tracks.push(trackData);
         }
     }
 
