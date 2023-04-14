@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import client from '../utils/redis-client.js';
+import { saveAlbumData, getAlbumData, saveTrackData, getTrackData } from '../utils/redis-client.js';
 const API_BASE_URL = 'https://api.spotify.com/v1';
 
 let delay = 1000;
@@ -60,7 +60,7 @@ async function getAlbums(accessToken, albumIds) {
     const queryAlbums = [];
 
     for (let albumId of albumIds) {
-        const albumData = await client.getAlbumData(albumId);
+        const albumData = getAlbumData(albumId);
         if (albumData) {
             albums.push(JSON.parse(albumData));
         } else {
@@ -81,7 +81,7 @@ async function getAlbums(accessToken, albumIds) {
             },
         });
         for (let album of data.albums) {
-            client.saveAlbumData(album.id, JSON.stringify(album));
+            saveAlbumData(album.id, JSON.stringify(album));
             albums.push(album);
         }
     }
@@ -118,7 +118,7 @@ async function getTracks(accessToken, trackIds) {
     const queryTracks = [];
 
     for (let trackId of trackIds) {
-        const trackData = await client.getTrackData(trackId);
+        const trackData = getTrackData(trackId);
         if (trackData) {
             tracks.push(JSON.parse(trackData));
         } else {
@@ -139,7 +139,7 @@ async function getTracks(accessToken, trackIds) {
             },
         });
         for (let track of data.tracks) {
-            client.saveTrackData(track.id, JSON.stringify(track));
+            saveTrackData(track.id, JSON.stringify(track));
             tracks.push(track);
         }
     }
