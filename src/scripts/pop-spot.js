@@ -82,8 +82,8 @@ async function getAlbums(accessToken, albumIds) {
         });
         for (let album of data.albums) {
             const albumData = {
-                id: album.id,
-                trackIds: album.tracks.items.map(track => track.id)
+                id: album.album.id,
+                trackIds: album.items.map(track => track.id)
             };
             await saveAlbumData(album.id, albumData);
             albums.push(albumData);
