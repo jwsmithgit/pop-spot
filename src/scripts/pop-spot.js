@@ -223,7 +223,7 @@ function makeDistinct(array) {
 
 function groupTracksByAlbumId(tracks) {
     return tracks.reduce((result, track) => {
-        const albumId = track.album.id;
+        const albumId = track.albumId;
         if (!result[albumId]) {
             result[albumId] = [];
         }
