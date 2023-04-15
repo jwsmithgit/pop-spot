@@ -2,7 +2,7 @@ import fetch from 'node-fetch';
 import { redisClient } from '../utils/redis-client.js';
 const API_BASE_URL = 'https://api.spotify.com/v1';
 
-let delay = 1000;
+let delay = 100;
 async function fetchWithDelay(call, callData) {
     await new Promise(resolve => setTimeout(resolve, delay));
 
@@ -27,7 +27,7 @@ async function fetchWithDelay(call, callData) {
         throw new Error(`Request failed with status ${response.status}: ${response.statusText}`);
     }
 
-    delay = Math.max(500, delay * 0.5);
+    delay = Math.max(100, delay * 0.5);
     return await response.json();
 }
 
@@ -177,7 +177,7 @@ function getPopularTracks(tracks) {
     const minPopularity = Math.min(...tracks.map(track => track.popularity));
     const maxPopularity = Math.max(...tracks.map(track => track.popularity));
     if (minPopularity == maxPopularity) return [];
-    const popularity = minPopularity + (maxPopularity - minPopularity) * 0.9;
+    const popularity = minPopularity + (maxPopularity - minPopularity) * 0.5;
     return tracks.filter(track => track.popularity >= popularity);
 }
 
