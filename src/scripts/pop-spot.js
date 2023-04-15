@@ -136,10 +136,8 @@ async function getTracks(accessToken, trackIds) {
     const tracks = [];
     const queryTracks = [];
 
-    console.log('tids:'+JSON.stringify(trackIds));
     for (let trackId of trackIds) {
         const trackData = await redisClient.getTrackData(trackId);
-        console.log('taatda:' +JSON.stringify(trackData));
         if (trackData) {
             tracks.push(trackData);
         } else {
@@ -243,7 +241,7 @@ export async function execute(accessToken) {
 
     let allTrackIds = makeDistinct(allAlbums.flatMap(album => album.trackIds));
     console.log('All tracks ids: ' + JSON.stringify(allTrackIds).substring(0, 100));
-    let allTracks = getTracks(accessToken, allTrackIds);
+    let allTracks = await getTracks(accessToken, allTrackIds);
     console.log('All tracks: ' + JSON.stringify(allTracks).substring(0, 100));
     let allTracksByAlbumId = groupTracksByAlbumId(allTracks);
     console.log('All albums: ' + JSON.stringify(allTracksByAlbumId).substring(0, 100));
