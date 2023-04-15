@@ -136,9 +136,10 @@ async function getTracks(accessToken, trackIds) {
     const tracks = [];
     const queryTracks = [];
 
+    console.log('tids:'+JSON.stringify(trackIds));
     for (let trackId of trackIds) {
         const trackData = await redisClient.getTrackData(trackId);
-        console.log(trackData);
+        console.log('taatda:' +JSON.stringify(trackData));
         if (trackData) {
             tracks.push(trackData);
         } else {
