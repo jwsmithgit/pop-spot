@@ -47,7 +47,8 @@ async function getLikedTracks(accessToken) {
             const trackData = {
                 id: track.id,
                 popularity: track.popularity,
-                albumId: track.album.id
+                albumId: track.album.id,
+                uri: track.uri
             };
             await redisClient.setTrackData(track.id, trackData);
             tracks.push(trackData);
@@ -161,7 +162,8 @@ async function getTracks(accessToken, trackIds) {
             const trackData = {
                 id: track.id,
                 popularity: track.popularity,
-                albumId: track.album.id
+                albumId: track.album.id,
+                uri: track.uri
             };
             await redisClient.setTrackData(track.id, trackData);
             tracks.push(trackData);
@@ -251,5 +253,5 @@ export async function execute(accessToken) {
     let popularTracks = Object.values(popularTracksByAlbumId).flat();
     console.log('Popular tracks: ' + JSON.stringify(popularTracks).substring(0, 100));
 
-    await createPlaylist(accessToken, 'Pop Spot', 'Liked Album Popular Songs', popularTracks.map(track => track.id));
+    await createPlaylist(accessToken, 'Pop Spot', 'Liked Album Popular Songs', popularTracks.map(track => track.uri));
 }
