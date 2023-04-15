@@ -2,6 +2,9 @@ import fetch from 'node-fetch';
 import { redisClient } from '../utils/redis-client.js';
 const API_BASE_URL = 'https://api.spotify.com/v1';
 
+let watchAlbumName = 'Is the Is Are';
+let watchAlbumId = '';
+
 let delay = 100;
 async function fetchWithDelay(call, callData) {
     await new Promise(resolve => setTimeout(resolve, delay));
@@ -29,6 +32,42 @@ async function fetchWithDelay(call, callData) {
 
     delay = Math.max(100, delay * 0.5);
     return await response.json();
+}
+
+async function getLikedAlbums(accessToken) {
+    const limit = 50;
+    let offset = 0;
+    let albums = [];
+
+    while (true) {
+        const data = await fetchWithDelay(`${API_BASE_URL}/me/albums?offset=${offset}&limit=${limit}`, {
+            headers: {
+                'Authorization': 'Bearer ' + accessToken
+            }
+        });
+
+        for (let album of data.items.map(item => item.album)) {
+            if (album.name == watchAlbumName) 
+            {
+                console.log('found watch');
+                watchAlbumId = album.id;
+            }
+            const albumData = {
+                id: album.id,
+                trackIds: album.tracks.items.map(track => track.id)
+            };
+            await redisClient.setAlbumData(album.id, albumData);
+            albums.push(albumData);
+        }
+
+        if (data.next) {
+            offset += limit;
+        } else {
+            break;
+        }
+    }
+
+    return albums;
 }
 
 async function getLikedTracks(accessToken) {
@@ -102,37 +141,6 @@ async function getAlbums(accessToken, albumIds) {
     return albums;
 }
 
-async function getLikedAlbums(accessToken) {
-    const limit = 50;
-    let offset = 0;
-    let albums = [];
-
-    while (true) {
-        const data = await fetchWithDelay(`${API_BASE_URL}/me/albums?offset=${offset}&limit=${limit}`, {
-            headers: {
-                'Authorization': 'Bearer ' + accessToken
-            }
-        });
-
-        for (let album of data.items.map(item => item.album)) {
-            const albumData = {
-                id: album.id,
-                trackIds: album.tracks.items.map(track => track.id)
-            };
-            await redisClient.setAlbumData(album.id, albumData);
-            albums.push(albumData);
-        }
-
-        if (data.next) {
-            offset += limit;
-        } else {
-            break;
-        }
-    }
-
-    return albums;
-}
-
 async function getTracks(accessToken, trackIds) {
     const tracks = [];
     const queryTracks = [];
@@ -177,7 +185,7 @@ function getPopularTracks(tracks) {
     const minPopularity = Math.min(...tracks.map(track => track.popularity));
     const maxPopularity = Math.max(...tracks.map(track => track.popularity));
     if (minPopularity == maxPopularity) return [];
-    const popularity = minPopularity + (maxPopularity - minPopularity) * 0.5;
+    const popularity = minPopularity + (maxPopularity - minPopularity) * 0.9;
     return tracks.filter(track => track.popularity >= popularity);
 }
 
@@ -248,6 +256,7 @@ export async function execute(accessToken) {
 
     let popularTracksByAlbumId = {};
     for (let albumId in allTracksByAlbumId) {
+        if (albumId == watchAlbumId) console.log('watchId ' + JSON.stringify(allTracksByAlbumId[albumId]));
         popularTracksByAlbumId[albumId] = getPopularTracks(allTracksByAlbumId[albumId]);
     }
     let popularTracks = Object.values(popularTracksByAlbumId).flat();
