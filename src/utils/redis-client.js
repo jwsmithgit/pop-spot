@@ -6,30 +6,34 @@ class RedisClient {
   }
 
   async connect() {
+    if (this.client.connected) return;
     await this.client.connect();
   }
 
   async setAlbumData(albumId, data) {
+    await this.connect();
     return await this.client.set(`album:${albumId}`, JSON.stringify(data));
   }
 
   async getAlbumData(albumId) {
+    await this.connect();
     let data = await this.client.get(`album:${albumId}`);
     return data ? JSON.parse(data) : null;
   }
 
   async setTrackData(trackId, data) {
+    await this.connect();
     return await this.client.set(`track:${trackId}`, JSON.stringify(data));
   }
 
   async getTrackData(trackId) {
+    await this.connect();
     let data = await this.client.get(`track:${trackId}`);
     return data ? JSON.parse(data) : null;
   }
 }
 
 const redisClient = new RedisClient(process.env.REDIS_URL);
-await redisClient.connect();
 export { redisClient };
 
 // import redis from 'redis';
