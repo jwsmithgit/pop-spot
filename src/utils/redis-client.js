@@ -27,7 +27,7 @@ class RedisClient {
 }
 
 const redisClient = new RedisClient(process.env.REDIS_URL);
-await resisClient.connect();
+await redisClient.connect();
 export { redisClient };
 
 // import redis from 'redis';
