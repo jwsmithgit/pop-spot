@@ -14,7 +14,8 @@ class RedisClient {
   }
 
   async getAlbumData(albumId) {
-    return await this.client.get(`album:${albumId}`).then((data) => (data ? JSON.parse(data) : data));
+    let data = await this.client.get(`album:${albumId}`);
+    return data ? JSON.parse(data) : null;
   }
 
   async setTrackData(trackId, data) {
@@ -22,7 +23,8 @@ class RedisClient {
   }
 
   async getTrackData(trackId) {
-    return await this.client.get(`track:${trackId}`).then((data) => (data ? JSON.parse(data) : data));
+    let data = await this.client.get(`track:${trackId}`);
+    return data ? JSON.parse(data) : null;
   }
 }
 
