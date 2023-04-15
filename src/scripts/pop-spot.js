@@ -234,7 +234,7 @@ function groupTracksByAlbumId(tracks) {
 export async function execute(accessToken) {
     let likedAlbums = await getLikedAlbums(accessToken);
     let likedTracks = await getLikedTracks(accessToken);
-    let likedTrackAlbumIds = makeDistinct(likedTracks.map(track => track.album.id));
+    let likedTrackAlbumIds = makeDistinct(likedTracks.map(track => track.albumId));
     let allAlbums = likedAlbums.concat(await getAlbums(accessToken, likedTrackAlbumIds));
     console.log('All albums: ' + JSON.stringify(allAlbums).substring(0, 100));
 
