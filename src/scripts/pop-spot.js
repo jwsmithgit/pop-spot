@@ -242,6 +242,7 @@ export async function execute(accessToken) {
     console.log('All albums: ' + JSON.stringify(allAlbums).substring(0, 100));
 
     let allTrackIds = makeDistinct(allAlbums.flatMap(album => album.trackIds));
+    console.log('All tracks ids: ' + JSON.stringify(allTracks).substring(0, 100));
     let allTracks = getTracks(accessToken, allTrackIds);
     console.log('All tracks: ' + JSON.stringify(allTracks).substring(0, 100));
     let allTracksByAlbumId = groupTracksByAlbumId(allTracks);
