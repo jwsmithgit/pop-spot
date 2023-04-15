@@ -116,7 +116,7 @@ async function getAlbums(accessToken, albumIds) {
         }
     }
 
-    const limit = 50;
+    const limit = 20;
     const albumChunks = [];
     for (let i = 0; i < queryAlbums.length; i += limit) {
         albumChunks.push(queryAlbums.slice(i, i + limit));
