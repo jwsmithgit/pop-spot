@@ -6,7 +6,7 @@ class RedisClient {
   }
 
   async connect() {
-    if (this.client.isOpen()) return;
+    if (this.client.isOpen) return;
     await this.client.connect();
   }
 
