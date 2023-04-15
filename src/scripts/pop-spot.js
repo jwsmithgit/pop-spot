@@ -43,7 +43,7 @@ async function getLikedTracks(accessToken) {
             }
         });
 
-        for (let track of data.items) {
+        for (let track of data.items.map(item => item.track)) {
             const trackData = {
                 id: track.id,
                 popularity: track.popularity,
@@ -113,7 +113,7 @@ async function getLikedAlbums(accessToken) {
             }
         });
 
-        for (let album of data.items.map(album => album.album)) {
+        for (let album of data.items.map(item => item.album)) {
             const albumData = {
                 id: album.id,
                 trackIds: album.tracks.items.map(track => track.id)
