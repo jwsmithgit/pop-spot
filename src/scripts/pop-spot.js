@@ -46,7 +46,8 @@ async function getLikedTracks(accessToken) {
         for (let track of data.items) {
             const trackData = {
                 id: track.id,
-                popularity: track.popularity
+                popularity: track.popularity,
+                albumId: track.album.id
             };
             await redisClient.setTrackData(track.id, trackData);
             tracks.push(trackData);
