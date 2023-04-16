@@ -114,8 +114,18 @@ async function getLikedTracks(accessToken) {
 async function getArtistAlbumIds(accessToken, artistIds) {
     let artistAlbumIds = {};
     const limit = 50;
-
+    
+    const queryArtistIds = [];
     for (let artistId of artistIds) {
+        const artistData = await redisClient.getArtistData(artistId);
+        if (artistData) {
+            artistAlbumIds.push(artistData);
+        } else {
+            queryArtistIds.push(artistId);
+        }
+    }
+
+    for (let artistId of queryArtistIds) {
         let albums = [];
         let offset = 0;
         while (true) {

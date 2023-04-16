@@ -10,6 +10,17 @@ class RedisClient {
     await this.client.connect();
   }
 
+  async setArtistData(artistId, data) {
+    await this.connect();
+    return await this.client.set(`artist:${artistId}`, JSON.stringify(data));
+  }
+
+  async getArtistData(artistId) {
+    await this.connect();
+    let data = await this.client.get(`artist:${artistId}`);
+    return data ? JSON.parse(data) : null;
+  }
+
   async setAlbumData(albumId, data) {
     await this.connect();
     return await this.client.set(`album:${albumId}`, JSON.stringify(data));
