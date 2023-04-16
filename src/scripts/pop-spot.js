@@ -118,7 +118,7 @@ async function getArtistAlbumIdsByArtistId(accessToken, artistIds) {
     for (let artistId of artistIds) {
         const artistData = await redisClient.getArtistData(artistId);
         if (artistData) {
-            artistAlbumIds[artistAd] = artistData;
+            artistAlbumIds[artistId] = artistData;
         } else {
             queryArtistIds.push(artistId);
         }
