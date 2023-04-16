@@ -65,7 +65,6 @@ async function getLikedAlbums(accessToken) {
         for (let album of data.items.map(item => item.album)) {
             const albumData = {
                 id: album.id,
-                popularity: album.popularity,
                 artistIds: album.artists.map(artist => artist.id),
                 trackIds: album.tracks.items.map(track => track.id)
             };
@@ -177,6 +176,7 @@ async function getAlbums(accessToken, albumIds) {
         for (let album of data.albums) {
             const albumData = {
                 id: album.id,
+                artistIds: album.artists.map(artist => artist.id),
                 trackIds: album.tracks.items.map(track => track.id)
             };
             await redisClient.setAlbumData(album.id, albumData);
@@ -216,6 +216,7 @@ async function getTracks(accessToken, trackIds) {
             const trackData = {
                 id: track.id,
                 popularity: track.popularity,
+                artistIds: track.artists.map(artist => artist.id),
                 albumId: track.album.id,
                 uri: track.uri
             };
