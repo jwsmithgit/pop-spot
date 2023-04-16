@@ -319,6 +319,7 @@ function groupTracksByAlbumId(tracks) {
 export async function execute(accessToken) {
     let likedArtistIds = await getLikedArtistIds(accessToken);
     let likedAlbums = await getLikedAlbums(accessToken);
+    console.log('undedinged album albums ' + JSON.stringify(likedAlbums.some(album => !album)));
     let likedTracks = await getLikedTracks(accessToken);
 
     // if a track has one artist, add it to liked artists
@@ -327,7 +328,9 @@ export async function execute(accessToken) {
     // otherwise add to liked albums to find album artist
     let trackAlbums = await getAlbums(accessToken, likedTracks.filter(track => track.artistIds.length > 1).map(track => track.albumId));
     console.log('track albums: ' + JSON.stringify(trackAlbums).substring(0, 100));
+    console.log('undedinged track albums ' + JSON.stringify(trackAlbums.some(album => !album)));
     likedAlbums = likedAlbums.concat(trackAlbums);
+    console.log('undedinged trackalbum albums ' + JSON.stringify(likedAlbums.some(album => !album)));
     console.log('albums ' + JSON.stringify(likedAlbums.map(album => album.artistIds).some(str => str.includes(','))));
     likedAlbums = Array.from(new Set(likedAlbums.map(album => album.id))).map(id => likedAlbums.find(album => album.id == id));
     console.log('albums ' + JSON.stringify(likedAlbums.map(album => album.artistIds).some(str => str.includes(','))));
