@@ -29,6 +29,7 @@ async function fetchWithDelay(call, callData) {
 }
 
 async function addAlbums(albums) {
+    let addedAlbums = [];
     for (let album of albums) {
         if (album.album_type != 'studio') continue;
 
@@ -38,13 +39,13 @@ async function addAlbums(albums) {
             trackIds: album.tracks.items.map(track => track.id)
         };
         await redisClient.setAlbumData(album.id, albumData);
-        albums.push(albumData);
+        addedAlbums.push(albumData);
     }
+    return addedAlbums;
 }
 
 async function addTracks(tracks) {
-    console.log('tracks: ' + JSON.stringify(tracks));
-
+    let addedTracks = [];
     for (let track of tracks) {
         if (track.linked_from) continue;
 
@@ -56,8 +57,9 @@ async function addTracks(tracks) {
             uri: track.uri
         };
         await redisClient.setTrackData(track.id, trackData);
-        tracks.push(trackData);
+        addedTracks.push(trackData);
     }
+    return addedTracks;
 }
 
 async function getLikedArtistIds(accessToken) {
@@ -94,7 +96,7 @@ async function getLikedAlbums(accessToken) {
             }
         });
 
-        await addAlbums(data.items.map(item => item.album));
+        albums = albums.concat(await addAlbums(data.items.map(item => item.album)));
 
         if (!data.next) break;
         offset += limit;
@@ -115,7 +117,7 @@ async function getLikedTracks(accessToken) {
             }
         });
 
-        await addTracks(data.items.map(item => item.track))
+        tracks = tracks.concat(await addTracks(data.items.map(item => item.track)));
 
         if (!data.next) break;
         offset += limit;
@@ -188,7 +190,7 @@ async function getAlbums(accessToken, albumIds) {
             }
         });
 
-        await addAlbums(data.albums);
+        albums = albums.concat(await addAlbums(data.albums));
     }
 
     return albums;
@@ -220,7 +222,7 @@ async function getTracks(accessToken, trackIds) {
             }
         });
         
-        await addTracks(data.tracks);
+        tracks = tracks.concat(await addTracks(data.tracks));
     }
 
     return tracks;
