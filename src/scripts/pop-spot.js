@@ -314,7 +314,7 @@ export async function execute(accessToken) {
     // if a track has one artist, add it to liked artists
     likedArtistIds = likedArtistIds.concat(likedTracks.filter(track => track.artistIds.length == 1).map(track => track.artistIds));
     // otherwise add to liked albums to find album artist
-    likedAlbums = likedAlbums.concat(await getAlbums(accessToken, likedTrackAlbumIds.filter(track => track.artistIds.length > 1).map(track => track.albumId)));
+    likedAlbums = likedAlbums.concat(await getAlbums(accessToken, likedTracks.filter(track => track.artistIds.length > 1).map(track => track.albumId)));
     likedAlbums = Array.from(new Set(likedAlbums.map(album => album.id))).map(id => likedAlbums.find(album => album.id == id));
 
     likedArtistIds = likedArtistIds.concat(likedAlbums.map(album => album.artistIds));
