@@ -308,14 +308,11 @@ function groupTracksByAlbumId(tracks) {
 
 export async function execute(accessToken) {
     let likedArtistIds = await getLikedArtistIds(accessToken);
-    console.log('liked artist ids: ' + JSON.stringify(likedArtistIds).substring(0, 100));
     let likedAlbums = await getLikedAlbums(accessToken);
-    console.log('liked albums: ' + JSON.stringify(likedAlbums).substring(0, 100));
     let likedTracks = await getLikedTracks(accessToken);
-    console.log('liked tracks: ' + JSON.stringify(likedTracks).substring(0, 100));
 
     // if a track has one artist, add it to liked artists
-    likedArtists = likedArtists.concat(likedTracks.select(track => track.artistIds.length == 1).map(track => track.artistIds));
+    likedArtistIds = likedArtists.concat(likedTracks.select(track => track.artistIds.length == 1).map(track => track.artistIds));
     // otherwise add to liked albums to find album artist
     likedAlbums = likedAlbums.concat(await getAlbums(accessToken, likedTrackAlbumIds.select(track => track.artistIds.length > 1).map(track => track.albumId)));
     likedAlbums = Array.from(new Set(likedAlbums.map(album => album.id))).map(id => likedAlbums.find(album => album.id == id));
