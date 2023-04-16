@@ -47,7 +47,7 @@ async function addAlbums(albums) {
 async function addTracks(tracks) {
     let addedTracks = [];
     for (let track of tracks) {
-        if (track.linked_from) continue;
+        if (track.linked_from.id) continue;
 
         const trackData = {
             id: track.id,
