@@ -260,7 +260,7 @@ function getOutlierTracks(tracks) {
     const outliers = [];
     for (const track of tracks) {
         // if (number < lowerBound || number > upperBound) {
-        if (popularity > upperBound) {
+        if (track.popularity > upperBound) {
             outliers.push(track);
         }
     }
