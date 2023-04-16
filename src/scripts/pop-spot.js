@@ -332,9 +332,12 @@ export async function execute(accessToken) {
 
     let artistAlbumIdsByArtistId = await getArtistAlbumIdsByArtistId(accessToken, likedArtistIds);
     let artistAlbums = await getAlbums(accessToken, Object.values(artistAlbumIdsByArtistId).flat());
+    console.log('artist album: ' + JSON.stringify(artistAlbums).substring(0, 100));
     let artistAlbumTracks = await getTracks(accessToken, artistAlbums.flatMap(album => album.trackIds));
     artistAlbumTracks = Array.from(new Set(artistAlbumTracks.map(track => track.uri))).map(uri => artistAlbumTracks.find(track => track.uri == uri));
+    console.log('artist album trakcs: ' + JSON.stringify(artistAlbumTracks).substring(0, 100));
     let artistAlbumTracksByAlbumId = groupTracksByAlbumId(artistAlbumTracks);
+    console.log('trakcs by album id tracks: ' + JSON.stringify(artistAlbumTracksByAlbumId).substring(0, 100));
 
     let popularTracksByAlbumId = {};
     for (let albumId in artistAlbumTracksByAlbumId) {
