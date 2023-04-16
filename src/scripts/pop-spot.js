@@ -31,10 +31,10 @@ async function fetchWithDelay(call, callData) {
 async function getLikedArtistIds(accessToken) {
     let artistIds = [];
     const limit = 50;
-    let offset = 0;
+    let after = null;
 
     while (true) {
-        const data = await fetchWithDelay(`${API_BASE_URL}/me/following?offset=${offset}&limit=${limit}`, { 
+        const data = await fetchWithDelay(`${API_BASE_URL}/me/following?limit=${limit}` + after ? `&after=${after}` : ``, { 
             headers: {
                 'Authorization': 'Bearer ' + accessToken
             }
@@ -44,7 +44,7 @@ async function getLikedArtistIds(accessToken) {
         artistIds.push(...ids);
 
         if (!data.next) break;
-        offset += limit;
+        after = artistIds[-1];
     }
 
     return artistIds;
