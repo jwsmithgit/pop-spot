@@ -128,6 +128,9 @@ async function getArtistAlbumIdsByArtistId(accessToken, artistIds) {
 
     console.log('query' + queryArtistIds.some(id => id.length > 22));
     for (let artistId of queryArtistIds) {
+
+        console.log('' + artistId);
+
         let albums = [];
         let offset = 0;
         while (true) {
