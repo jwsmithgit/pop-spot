@@ -320,10 +320,9 @@ export async function execute(accessToken) {
     likedArtistIds = likedArtistIds.concat(likedAlbums.map(album => album.artistIds));
     likedArtistIds = [...new Set(likedArtistIds)];
 
-    let artistAlbumIds = await getArtistAlbumIds(accessToken, likedArtists);
+    let artistAlbumIds = await getArtistAlbumIds(accessToken, likedArtistIds);
     let artistAlbums = await getAlbums(accessToken, artistAlbumIds);
-    let artistAlbumTrackIds = artistAlbums.flatMap(album => album.trackIds);
-    let artistAlbumTracks = await getTracks(accessToken, artistAlbumTrackIds);
+    let artistAlbumTracks = await getTracks(accessToken, artistAlbums.flatMap(album => album.trackIds));
     let artistAlbumTracksByAlbumId = groupTracksByAlbumId(artistAlbumTracks);
 
     let popularTracksByAlbumId = {};
