@@ -43,6 +43,8 @@ async function addAlbums(albums) {
 }
 
 async function addTracks(tracks) {
+    console.log('tracks: ' + JSON.stringify(tracks));
+
     for (let track of tracks) {
         if (track.linked_from) continue;
 
