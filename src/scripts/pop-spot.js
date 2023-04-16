@@ -165,8 +165,8 @@ async function getArtistAlbumIdsByArtistId(accessToken, artistIds) {
 }
 
 async function getAlbums(accessToken, albumIds) {
-    const albums = [];
-    const queryAlbums = [];
+    let albums = [];
+    let queryAlbums = [];
 
     for (let albumId of albumIds) {
         const albumData = await redisClient.getAlbumData(albumId);
@@ -197,8 +197,8 @@ async function getAlbums(accessToken, albumIds) {
 }
 
 async function getTracks(accessToken, trackIds) {
-    const tracks = [];
-    const queryTracks = [];
+    let tracks = [];
+    let queryTracks = [];
 
     for (let trackId of trackIds) {
         const trackData = await redisClient.getTrackData(trackId);
