@@ -114,8 +114,6 @@ async function getArtistAlbumIdsByArtistId(accessToken, artistIds) {
     let artistAlbumIds = {};
     const limit = 50;
     
-    console.log('start' + artistIds.some(id => id.length > 22));
-
     const queryArtistIds = [];
     for (let artistId of artistIds) {
         const artistData = await redisClient.getArtistData(artistId);
@@ -126,12 +124,7 @@ async function getArtistAlbumIdsByArtistId(accessToken, artistIds) {
         }
     }
 
-    console.log('query' + queryArtistIds.some(id => id.length > 22));
-    console.log(JSON.stringify(artistIds));
     for (let artistId of queryArtistIds) {
-
-        console.log('' + artistId);
-
         let albums = [];
         let offset = 0;
         while (true) {
@@ -326,20 +319,19 @@ function groupTracksByAlbumId(tracks) {
 
 export async function execute(accessToken) {
     let likedArtistIds = await getLikedArtistIds(accessToken);
-    console.log('artists' + likedArtistIds.some(id => id.length > 22));
+    console.log('artists' + JSON.stringify(likedArtistIds));
     let likedAlbums = await getLikedAlbums(accessToken);
     let likedTracks = await getLikedTracks(accessToken);
 
     // if a track has one artist, add it to liked artists
     likedArtistIds = likedArtistIds.concat(likedTracks.filter(track => track.artistIds.length == 1).map(track => track.artistIds));
-    console.log('tracks' + likedArtistIds.some(id => id.length > 22));
+    console.log('tracks' + JSON.stringify(likedArtistIds));
     // otherwise add to liked albums to find album artist
     likedAlbums = likedAlbums.concat(await getAlbums(accessToken, likedTracks.filter(track => track.artistIds.length > 1).map(track => track.albumId)));
     likedAlbums = Array.from(new Set(likedAlbums.map(album => album.id))).map(id => likedAlbums.find(album => album.id == id));
     likedArtistIds = likedArtistIds.concat(likedAlbums.map(album => album.artistIds));
-    console.log('albums' + likedArtistIds.some(id => id.length > 22));
     likedArtistIds = [...new Set(likedArtistIds)];
-    console.log('last' + likedArtistIds.some(id => id.length > 22));
+    console.log('albums' + JSON.stringify(likedArtistIds));
 
     let artistAlbumIdsByArtistId = await getArtistAlbumIdsByArtistId(accessToken, likedArtistIds);
     let artistAlbums = await getAlbums(accessToken, Object.values(artistAlbumIdsByArtistId).flat());
