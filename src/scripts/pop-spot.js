@@ -28,6 +28,36 @@ async function fetchWithDelay(call, callData) {
     return await response.json();
 }
 
+async function addAlbums(albums) {
+    for (let album of albums) {
+        if (album.album_type != 'studio') continue;
+
+        const albumData = {
+            id: album.id,
+            artistIds: album.artists.map(artist => artist.id),
+            trackIds: album.tracks.items.map(track => track.id)
+        };
+        await redisClient.setAlbumData(album.id, albumData);
+        albums.push(albumData);
+    }
+}
+
+async function addTracks(tracks) {
+    for (let track of tracks) {
+        if (track.linked_from) continue;
+
+        const trackData = {
+            id: track.id,
+            popularity: track.popularity,
+            artistIds: track.artists.map(artist => artist.id),
+            albumId: track.album.id,
+            uri: track.uri
+        };
+        await redisClient.setTrackData(track.id, trackData);
+        tracks.push(trackData);
+    }
+}
+
 async function getLikedArtistIds(accessToken) {
     let artistIds = [];
     const limit = 50;
@@ -62,15 +92,7 @@ async function getLikedAlbums(accessToken) {
             }
         });
 
-        for (let album of data.items.map(item => item.album)) {
-            const albumData = {
-                id: album.id,
-                artistIds: album.artists.map(artist => artist.id),
-                trackIds: album.tracks.items.map(track => track.id)
-            };
-            await redisClient.setAlbumData(album.id, albumData);
-            albums.push(albumData);
-        }
+        await addAlbums(data.items.map(item => item.album));
 
         if (!data.next) break;
         offset += limit;
@@ -91,17 +113,7 @@ async function getLikedTracks(accessToken) {
             }
         });
 
-        for (let track of data.items.map(item => item.track)) {
-            const trackData = {
-                id: track.id,
-                popularity: track.popularity,
-                artistIds: track.artists.map(artist => artist.id),
-                albumId: track.album.id,
-                uri: track.uri
-            };
-            await redisClient.setTrackData(track.id, trackData);
-            tracks.push(trackData);
-        }
+        await addTracks(data.items.map(item => item.track))
 
         if (!data.next) break;
         offset += limit;
@@ -173,15 +185,8 @@ async function getAlbums(accessToken, albumIds) {
                 'Authorization': 'Bearer ' + accessToken
             }
         });
-        for (let album of data.albums) {
-            const albumData = {
-                id: album.id,
-                artistIds: album.artists.map(artist => artist.id),
-                trackIds: album.tracks.items.map(track => track.id)
-            };
-            await redisClient.setAlbumData(album.id, albumData);
-            albums.push(albumData);
-        }
+
+        await addAlbums(data.albums);
     }
 
     return albums;
@@ -212,17 +217,8 @@ async function getTracks(accessToken, trackIds) {
                 'Authorization': 'Bearer ' + accessToken
             }
         });
-        for (let track of data.tracks) { 
-            const trackData = {
-                id: track.id,
-                popularity: track.popularity,
-                artistIds: track.artists.map(artist => artist.id),
-                albumId: track.album.id,
-                uri: track.uri
-            };
-            await redisClient.setTrackData(track.id, trackData);
-            tracks.push(trackData);
-        }
+        
+        await addTracks(data.tracks);
     }
 
     return tracks;
@@ -319,19 +315,16 @@ function groupTracksByAlbumId(tracks) {
 
 export async function execute(accessToken) {
     let likedArtistIds = await getLikedArtistIds(accessToken);
-    console.log('artists' + JSON.stringify(likedArtistIds));
     let likedAlbums = await getLikedAlbums(accessToken);
     let likedTracks = await getLikedTracks(accessToken);
 
     // if a track has one artist, add it to liked artists
     likedArtistIds = likedArtistIds.concat(likedTracks.filter(track => track.artistIds.length == 1).flatMap(track => track.artistIds));
-    console.log('tracks' + JSON.stringify(likedArtistIds));
     // otherwise add to liked albums to find album artist
     likedAlbums = likedAlbums.concat(await getAlbums(accessToken, likedTracks.filter(track => track.artistIds.length > 1).map(track => track.albumId)));
     likedAlbums = Array.from(new Set(likedAlbums.map(album => album.id))).map(id => likedAlbums.find(album => album.id == id));
     likedArtistIds = likedArtistIds.concat(likedAlbums.flatMap(album => album.artistIds));
     likedArtistIds = [...new Set(likedArtistIds)];
-    console.log('albums' + JSON.stringify(likedArtistIds));
 
     let artistAlbumIdsByArtistId = await getArtistAlbumIdsByArtistId(accessToken, likedArtistIds);
     let artistAlbums = await getAlbums(accessToken, Object.values(artistAlbumIdsByArtistId).flat());
