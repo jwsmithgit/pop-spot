@@ -34,7 +34,7 @@ async function getLikedArtistIds(accessToken) {
     let after = null;
 
     while (true) {
-        const data = await fetchWithDelay(`${API_BASE_URL}/me/following?limit=${limit}` + after ? `&after=${after}` : ``, { 
+        const data = await fetchWithDelay(`${API_BASE_URL}/me/following?limit=${limit}` + (after ? `&after=${after}` : ``), { 
             headers: {
                 'Authorization': 'Bearer ' + accessToken
             }
