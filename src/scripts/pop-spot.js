@@ -110,7 +110,7 @@ async function getLikedTracks(accessToken) {
     return tracks;
 }
 
-async function getArtistAlbumIds(accessToken, artistIds) {
+async function getArtistAlbumIdsByArtistId(accessToken, artistIds) {
     let artistAlbumIds = {};
     const limit = 50;
     
@@ -118,7 +118,7 @@ async function getArtistAlbumIds(accessToken, artistIds) {
     for (let artistId of artistIds) {
         const artistData = await redisClient.getArtistData(artistId);
         if (artistData) {
-            artistAlbumIds.push(artistData);
+            artistAlbumIds[artistAd] = artistData;
         } else {
             queryArtistIds.push(artistId);
         }
@@ -326,14 +326,12 @@ export async function execute(accessToken) {
     likedArtistIds = likedArtistIds.concat(likedTracks.filter(track => track.artistIds.length == 1).map(track => track.artistIds));
     // otherwise add to liked albums to find album artist
     likedAlbums = likedAlbums.concat(await getAlbums(accessToken, likedTracks.filter(track => track.artistIds.length > 1).map(track => track.albumId)));
-    console.log('albums ' + JSON.stringify(likedAlbums.map(album => album.artistIds).some(str => str.includes(','))));
     likedAlbums = Array.from(new Set(likedAlbums.map(album => album.id))).map(id => likedAlbums.find(album => album.id == id));
-    console.log('albums ' + JSON.stringify(likedAlbums.map(album => album.artistIds).some(str => str.includes(','))));
     likedArtistIds = likedArtistIds.concat(likedAlbums.map(album => album.artistIds));
     likedArtistIds = [...new Set(likedArtistIds)];
 
-    let artistAlbumIds = await getArtistAlbumIds(accessToken, likedArtistIds);
-    let artistAlbums = await getAlbums(accessToken, artistAlbumIds);
+    let artistAlbumIdsByArtistId = await getArtistAlbumIdsByArtistId(accessToken, likedArtistIds);
+    let artistAlbums = await getAlbums(accessToken, Object.values(artistAlbumIdsByArtistId).flat());
     let artistAlbumTracks = await getTracks(accessToken, artistAlbums.flatMap(album => album.trackIds));
     let artistAlbumTracksByAlbumId = groupTracksByAlbumId(artistAlbumTracks);
 
