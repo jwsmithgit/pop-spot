@@ -114,6 +114,8 @@ async function getArtistAlbumIdsByArtistId(accessToken, artistIds) {
     let artistAlbumIds = {};
     const limit = 50;
     
+    console.log('start' + artistIds.some(id => id.length > 22));
+
     const queryArtistIds = [];
     for (let artistId of artistIds) {
         const artistData = await redisClient.getArtistData(artistId);
@@ -124,6 +126,7 @@ async function getArtistAlbumIdsByArtistId(accessToken, artistIds) {
         }
     }
 
+    console.log('query' + queryArtistIds.some(id => id.length > 22));
     for (let artistId of queryArtistIds) {
         let albums = [];
         let offset = 0;
