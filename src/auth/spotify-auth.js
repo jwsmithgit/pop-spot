@@ -4,7 +4,7 @@ import url from 'url';
 // Spotify authentication URL
 export function getAuthorizationUrl(state) {
     const redirectUri = process.env.SPOTIFY_REDIRECT_URI;
-    const scope = 'user-read-private user-read-email playlist-modify-public playlist-modify-private user-library-read';
+    const scope = 'user-follow-read user-library-read playlist-modify-public';
   
     const authUrl = new url.URL('https://accounts.spotify.com/authorize');
     authUrl.searchParams.set('response_type', 'code');
