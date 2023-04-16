@@ -312,12 +312,12 @@ export async function execute(accessToken) {
     let likedTracks = await getLikedTracks(accessToken);
 
     // if a track has one artist, add it to liked artists
-    likedArtistIds = likedArtists.concat(likedTracks.select(track => track.artistIds.length == 1).map(track => track.artistIds));
+    likedArtistIds = likedArtistIds.concat(likedTracks.select(track => track.artistIds.length == 1).map(track => track.artistIds));
     // otherwise add to liked albums to find album artist
     likedAlbums = likedAlbums.concat(await getAlbums(accessToken, likedTrackAlbumIds.select(track => track.artistIds.length > 1).map(track => track.albumId)));
     likedAlbums = Array.from(new Set(likedAlbums.map(album => album.id))).map(id => likedAlbums.find(album => album.id == id));
 
-    likedArtistIds = likedArtists.concat(likedAlbums.map(album => album.artistIds));
+    likedArtistIds = likedArtistIds.concat(likedAlbums.map(album => album.artistIds));
     likedArtistIds = [...new Set(likedArtistIds)];
 
     let artistAlbumIds = await getArtistAlbumIds(accessToken, likedArtists);
