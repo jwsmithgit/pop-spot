@@ -326,9 +326,10 @@ export async function execute(accessToken) {
     console.log('tracks ' + JSON.stringify(likedArtistIds.some(str => str.includes(','))))
     // otherwise add to liked albums to find album artist
     likedAlbums = likedAlbums.concat(await getAlbums(accessToken, likedTracks.filter(track => track.artistIds.length > 1).map(track => track.albumId)));
-    likedAlbums = Array.from(new Set(likedAlbums.map(album => album.id))).map(id => likedAlbums.find(album => album.id == id));
+    temp = Array.from(new Set(likedAlbums.map(album => album.id))).map(id => likedAlbums.find(album => album.id == id));
+    likedAlbums = temp;
+    console.log('albums ' + JSON.stringify(likedAlbums.map(album => album.artistIds).some(str => str.includes(','))));
     likedArtistIds = likedArtistIds.concat(likedAlbums.map(album => album.artistIds));
-    console.log('albums ' + JSON.stringify(likedArtistIds.some(str => str.includes(','))))
     likedArtistIds = [...new Set(likedArtistIds)];
 
     let artistAlbumIds = await getArtistAlbumIds(accessToken, likedArtistIds);
