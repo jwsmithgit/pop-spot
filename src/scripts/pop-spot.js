@@ -34,6 +34,8 @@ async function addAlbums(albums) {
     for (let album of albums) {
         if (skipAlbumTypes.includes(album.album_type)) continue;
 
+        console.log('adding album');
+
         const albumData = {
             id: album.id,
             artistIds: album.artists.map(artist => artist.id),
@@ -42,6 +44,7 @@ async function addAlbums(albums) {
         await redisClient.setAlbumData(album.id, albumData);
         addedAlbums.push(albumData);
     }
+    console.log('alubums: ' + JSON.stringify(addedAlbums).substring(0, 100));
     return addedAlbums;
 }
 
