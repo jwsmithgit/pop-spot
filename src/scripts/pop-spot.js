@@ -94,7 +94,7 @@ async function getLikedArtists(accessToken) {
             }
         });
 
-        artists = artists.concat(addArtists(data.artists.items));
+        artists = artists.concat(await addArtists(data.artists.items));
         console.log('added art mid: ' + JSON.stringify(artists));
 
         if (!data.next) break;
