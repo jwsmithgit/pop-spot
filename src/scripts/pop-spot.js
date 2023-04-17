@@ -404,7 +404,7 @@ export async function execute(accessToken) {
     let artistAlbums = await getArtistAlbums(accessToken, Object.values(artists).map(artist => artist.id));
     albums = await getAlbums(accessToken, Object.values(artistAlbums).flat());
     tracks = await getTracks(accessToken, Object.values(albums).flatMap(album => album.trackIds));
-    let albumTracks = tracks.reduce((acc, track) => ({...acc, [track.id]: track}), {});
+    let albumTracks = Object.values(tracks).reduce((acc, track) => ({...acc, [track.id]: track}), {});
     
     let albumPopTracks = Object.values(albumTracks).map(tracks => getPopularTracks(tracks));
     let popTracks = Object.values(albumPopTracks).flat();
