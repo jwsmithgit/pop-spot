@@ -31,7 +31,10 @@ async function fetchWithDelay(call, callData) {
 async function addAlbums(albums) {
     let addedAlbums = [];
     for (let album of albums) {
-        if (album.album_type != 'studio') continue;
+        if (album.album_type != 'album' || 
+            album.album_type != 'ep') {
+            continue;
+        }
 
         const albumData = {
             id: album.id,
