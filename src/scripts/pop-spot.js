@@ -28,16 +28,11 @@ async function fetchWithDelay(call, callData) {
     return await response.json();
 }
 
-const watchArtistName = "Misery Signals";
-let watchArtistId;
-
 async function addArtists(artists) {
     let addedArtists = {};
     const skipGenres = ['asmr'];
     for (let artist of artists) {
         if (artist.genres.some(genre => skipGenres.includes(genre))) continue;
-
-        if (artist.name == watchArtistName) watchArtistId = artist.id;
 
         const artistData = {
             id: artist.id,
@@ -413,8 +408,8 @@ export async function execute(accessToken) {
 
     let popTracks = Object.values(albumTracks).flatMap(tracks => getPopularTracks(tracks));
     popTracks = popTracks.sort((a, b) => {
-        if (a.artistId != b.artistId) return artists[a.artistId].name < artists[b.artistId].name ? -1 : 1;
-        if (a.albumId != b.albumId) return albums[a.albumId].releaseDate - albums[b.albumId].releaseData;
+        if (a.artistIds[0] != b.artistIds[0]) return artists[a.artistIds[0]].name < artists[b.artistIds[0]].name ? -1 : 1;
+        if (a.albumId != b.albumId) return albums[a.albumId].releaseDate < albums[b.albumId].releaseDate ? -1 : 1;
         return a.trackNumber - b.trackNumber;
     });
 
