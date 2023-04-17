@@ -17,6 +17,7 @@ class RedisClient {
 
   async getData(key, id) {
     await this.connect();
+    console.log(`redis: ${key}`);
     let data = await this.client.get(`${key}:${id}`);
     return data ? JSON.parse(data) : null;
   }
