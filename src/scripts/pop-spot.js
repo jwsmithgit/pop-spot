@@ -338,6 +338,7 @@ function groupTracksByAlbumId(tracks) {
 
 export async function execute(accessToken) {
     let likedArtists = await getLikedArtists(accessToken);
+    console.log('liked art: ' + JSON.stringify(likedArtists).substring(0, 100));
     let likedAlbums = await getLikedAlbums(accessToken);
     let likedTracks = await getLikedTracks(accessToken);
 
