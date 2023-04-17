@@ -340,7 +340,9 @@ export async function execute(accessToken) {
     let likedArtists = await getLikedArtists(accessToken);
     console.log('liked art: ' + JSON.stringify(likedArtists).substring(0, 100));
     let likedAlbums = await getLikedAlbums(accessToken);
+    console.log('liked alb: ' + JSON.stringify(likedAlbums).substring(0, 100));
     let likedTracks = await getLikedTracks(accessToken);
+    console.log('liked tra: ' + JSON.stringify(likedTracks).substring(0, 100));
 
     let likedArtistIds = likedArtists.map(artist => artist.id);
     // if a track has one artist, add it to liked artists
