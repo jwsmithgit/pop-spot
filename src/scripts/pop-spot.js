@@ -81,7 +81,7 @@ async function addTracks(tracks) {
     return addedTracks;
 }
 
-async function getLikedArtist(accessToken) {
+async function getLikedArtists(accessToken) {
     let artists = [];
     const limit = 50;
     let after = null;
