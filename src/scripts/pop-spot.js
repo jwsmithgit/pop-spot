@@ -234,7 +234,7 @@ async function getAlbums(accessToken, albumIds) {
     for (let albumId of albumIds) {
         const albumData = await redisClient.getAlbumData(albumId);
         if (albumData) {
-            albums.push(albumData);
+            albums[albumId] = albumData;
         } else {
             queryAlbums.push(albumId);
         }
@@ -266,7 +266,7 @@ async function getTracks(accessToken, trackIds) {
     for (let trackId of trackIds) {
         const trackData = await redisClient.getTrackData(trackId);
         if (trackData) {
-            tracks.push(trackData);
+            tracks[trackId] = trackData;
         } else {
             queryTracks.push(trackId);
         }
