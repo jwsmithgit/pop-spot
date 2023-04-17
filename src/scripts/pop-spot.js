@@ -412,6 +412,8 @@ export async function execute(accessToken) {
             // i guess this can happen if the main artist is not the album artist???
             let aArtist = artists[a.artistIds.find(artistId => artists[artistId])];
             let bArtist = artists[b.artistIds.find(artistId => artists[artistId])];
+            if (!aArtist) return 1;
+            if (!bArtist) return -1;
             return aArtist.name < bArtist.name ? -1 : 1;
         }
         if (a.albumId != b.albumId) return albums[a.albumId].releaseDate < albums[b.albumId].releaseDate ? -1 : 1;
