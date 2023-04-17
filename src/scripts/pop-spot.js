@@ -286,12 +286,13 @@ async function getTracks(accessToken, trackIds) {
     return tracks;
 }
 
-function getPopularTracks(tracks, numDeviations = 2) {
+function getPopularTracks(tracks) {//, numDeviations = 2) {
     const popularityScores = tracks.map((track) => track.popularity);
     const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
     const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
     const stdDev = Math.sqrt(variance);
 
+    const numDeviations = 1 - mean * 0.01;// 0 pop mean => 1, 100 pop mean = 0
     const filteredTracks = tracks.filter((track) => track.popularity > mean + numDeviations * stdDev);
 
     return filteredTracks;
