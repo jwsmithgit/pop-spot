@@ -411,11 +411,9 @@ export async function execute(accessToken) {
         albumTracks[track.albumId].push(track);
     });
 
-    let albumPopTracks = Object.values(albumTracks).map(tracks => getPopularTracks(tracks));
-    let popTracks = Object.values(albumPopTracks).flat();
-    
+    let popTracks = Object.values(albumTracks).flatMap(tracks => getPopularTracks(tracks));
     popTracks = popTracks.sort((a, b) => {
-        if (a.artistId != b.artistId) return artists[a.artistId].name - artists[b.artistId].name;
+        if (a.artistId != b.artistId) return artists[a.artistId].name < artists[b.artistId].name ? -1 : 1;
         if (a.albumId != b.albumId) return albums[a.albumId].releaseDate - albums[b.albumId].releaseData;
         return a.trackNumber - b.trackNumber;
     });
