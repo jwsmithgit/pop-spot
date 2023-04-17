@@ -414,7 +414,7 @@ export async function execute(accessToken) {
     let albumPopTracks = Object.values(albumTracks).map(tracks => getPopularTracks(tracks));
     let popTracks = Object.values(albumPopTracks).flat();
     
-    popTracks.sort((a, b) => {
+    popTracks = popTracks.sort((a, b) => {
         if (a.artistId != b.artistId) return artists[a.artistId].name - artists[b.artistId].name;
         if (a.albumId != b.albumId) return albums[a.albumId].releaseDate - albums[b.albumId].releaseData;
         return a.trackNumber - b.trackNumber;
