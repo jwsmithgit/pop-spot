@@ -44,6 +44,7 @@ async function addArtists(artists) {
         };
         addedArtists.push(artistData);
     }
+    console.log('added art: ' + JSON.stringify(addedArtists));
     return addedArtists;
 }
 
