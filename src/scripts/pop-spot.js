@@ -408,7 +408,11 @@ export async function execute(accessToken) {
 
     let popTracks = Object.values(albumTracks).flatMap(tracks => getPopularTracks(tracks));
     popTracks = popTracks.sort((a, b) => {
-        if (a.artistIds[0] != b.artistIds[0]) return artists[a.artistIds[0]].name < artists[b.artistIds[0]].name ? -1 : 1;
+        if (a.artistIds[0] != b.artistIds[0]) {
+            if (!artists[a.artistIds[0]]) return 1;
+            if (!artists[b.artistIds[0]]) return -1;
+            return artists[a.artistIds[0]].name < artists[b.artistIds[0]].name ? -1 : 1;
+        }
         if (a.albumId != b.albumId) return albums[a.albumId].releaseDate < albums[b.albumId].releaseDate ? -1 : 1;
         return a.trackNumber - b.trackNumber;
     });
