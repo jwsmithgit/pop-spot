@@ -406,7 +406,7 @@ export async function execute(accessToken) {
     tracks = await getTracks(accessToken, Object.values(albums).flatMap(album => album.trackIds));
     
     let albumTracks = {};
-    tracks.forEach(track => {
+    Object.values(tracks).forEach(track => {
         if (!albumTracks[track.albumId]) albumTracks[track.albumId] = [];
         albumTracks[track.albumId].push(track);
     });
