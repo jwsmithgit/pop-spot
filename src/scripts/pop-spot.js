@@ -58,7 +58,8 @@ async function addAlbums(albums) {
     const skipAlbumTypes = ['single', 'compilation', 'appears_on', 'live', 'remix', 'audiobook'];
     for (let album of albums) {
         if (skipAlbumTypes.includes(album.album_type)) continue;
-        if (album.name.toLowerCase().includes('live') && album.tracks.items.map(track => track.name).every(trackName => trackName.toLowerCase().includes('live'))) continue;
+        //album.name.toLowerCase().includes('live') && 
+        if (album.tracks.items.map(track => track.name).every(trackName => trackName.toLowerCase().includes('live'))) continue;
 
         const albumData = {
             id: album.id,
@@ -292,7 +293,7 @@ function getPopularTracks(tracks) {//, numDeviations = 2) {
     const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
     const stdDev = Math.sqrt(variance);
 
-    const numDeviations = 1 - mean * 0.01;// 0 pop mean => 1, 100 pop mean = 0
+    const numDeviations = 2 * (1 - mean * 0.01);// 0 pop mean => 2, 100 pop mean = 0
     const filteredTracks = tracks.filter((track) => track.popularity > mean + numDeviations * stdDev);
 
     return filteredTracks;
