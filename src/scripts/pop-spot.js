@@ -286,7 +286,7 @@ async function getTracks(accessToken, trackIds) {
     return tracks;
 }
 
-function getPopularTracks(tracks, numDeviations = 1) {
+function getPopularTracks(tracks, numDeviations = 2) {
     const popularityScores = tracks.map((track) => track.popularity);
     const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
     const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
@@ -409,9 +409,10 @@ export async function execute(accessToken) {
     let popTracks = Object.values(albumTracks).flatMap(tracks => getPopularTracks(tracks));
     popTracks = popTracks.sort((a, b) => {
         if (a.artistIds[0] != b.artistIds[0]) {
-            if (!artists[a.artistIds[0]]) return 1;
-            if (!artists[b.artistIds[0]]) return -1;
-            return artists[a.artistIds[0]].name < artists[b.artistIds[0]].name ? -1 : 1;
+            // i guess this can happen if the main artist is not the album artist???
+            let aArtist = artists[a.artistIds.find(artistId => artists[artistId])];
+            let bArtist = artists[b.artistIds.find(artistId => artists[artistId])];
+            return aArtist.name < bArtist.name ? -1 : 1;
         }
         if (a.albumId != b.albumId) return albums[a.albumId].releaseDate < albums[b.albumId].releaseDate ? -1 : 1;
         return a.trackNumber - b.trackNumber;
