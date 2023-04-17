@@ -28,13 +28,30 @@ async function fetchWithDelay(call, callData) {
     return await response.json();
 }
 
+const watchArtistName = "Misery Signals";
+let watchArtistId;
+
+async function addArtists(artists) {
+    let addedArtists = [];
+    const skipGenres = ['asmr'];
+    for (let artist of artists) {
+        if (artist.genres.some(genre => skipGenres.includes(genre))) continue;
+
+        if (artist.name == watchArtistName) watchArtistId = artist.id;
+
+        const artistData = {
+            id: artist.id
+        };
+        addedArtists.push(artistData);
+    }
+    return addedArtists;
+}
+
 async function addAlbums(albums) {
     let addedAlbums = [];
     const skipAlbumTypes = ['single', 'compilation', 'appears_on', 'live', 'remix', 'audiobook'];
     for (let album of albums) {
         if (skipAlbumTypes.includes(album.album_type)) continue;
-
-        console.log('adding album');
 
         const albumData = {
             id: album.id,
@@ -44,7 +61,6 @@ async function addAlbums(albums) {
         await redisClient.setAlbumData(album.id, albumData);
         addedAlbums.push(albumData);
     }
-    console.log('alubums: ' + JSON.stringify(addedAlbums).substring(0, 100));
     return addedAlbums;
 }
 
@@ -57,8 +73,7 @@ async function addTracks(tracks) {
             id: track.id,
             popularity: track.popularity,
             artistIds: track.artists.map(artist => artist.id),
-            albumId: track.album.id,
-            uri: track.uri
+            albumId: track.album.id
         };
         await redisClient.setTrackData(track.id, trackData);
         addedTracks.push(trackData);
@@ -66,8 +81,8 @@ async function addTracks(tracks) {
     return addedTracks;
 }
 
-async function getLikedArtistIds(accessToken) {
-    let artistIds = [];
+async function getLikedArtist(accessToken) {
+    let artists = [];
     const limit = 50;
     let after = null;
 
@@ -78,14 +93,13 @@ async function getLikedArtistIds(accessToken) {
             }
         });
 
-        const ids = data.artists.items.map(artist => artist.id);
-        artistIds.push(...ids);
+        artists = artists.concat(addArtists(data.artists.items));
 
         if (!data.next) break;
         after = artistIds[-1];
     }
 
-    return artistIds;
+    return artists;
 }
 
 async function getLikedAlbums(accessToken) {
@@ -322,33 +336,25 @@ function groupTracksByAlbumId(tracks) {
 }
 
 export async function execute(accessToken) {
-    let likedArtistIds = await getLikedArtistIds(accessToken);
-    console.log('liked art: ' + JSON.stringify(likedArtistIds).substring(0, 100));
+    let likedArtists = await getLikedArtists(accessToken);
     let likedAlbums = await getLikedAlbums(accessToken);
-    console.log('liked alb: ' + JSON.stringify(likedAlbums).substring(0, 100));
     let likedTracks = await getLikedTracks(accessToken);
-    console.log('liked tra: ' + JSON.stringify(likedTracks).substring(0, 100));
 
+    likedArtistIds = likedArtists.map(artist => artist.id);
     // if a track has one artist, add it to liked artists
     likedArtistIds = likedArtistIds.concat(likedTracks.filter(track => track.artistIds.length == 1).flatMap(track => track.artistIds));
-    console.log('liked art: ' + JSON.stringify(likedArtistIds).substring(0, 100));
     // otherwise add to liked albums to find album artist
     likedAlbums = likedAlbums.concat(await getAlbums(accessToken, likedTracks.filter(track => track.artistIds.length > 1).map(track => track.albumId)));
     likedAlbums = Array.from(new Set(likedAlbums.map(album => album.id))).map(id => likedAlbums.find(album => album.id == id));
-    console.log('liked alb: ' + JSON.stringify(likedAlbums).substring(0, 100));
     likedArtistIds = likedArtistIds.concat(likedAlbums.flatMap(album => album.artistIds));
     likedArtistIds = [...new Set(likedArtistIds)];
-    console.log('liked art: ' + JSON.stringify(likedArtistIds).substring(0, 100));
 
     let artistAlbumIdsByArtistId = await getArtistAlbumIdsByArtistId(accessToken, likedArtistIds);
-    console.log('artist album by art id: ' + JSON.stringify(artistAlbumIdsByArtistId).substring(0, 100));
+    console.log('Popular tracks: ' + JSON.stringify(artistAlbumIdsByArtistId[watchArtistId]));
     let artistAlbums = await getAlbums(accessToken, Object.values(artistAlbumIdsByArtistId).flat());
-    console.log('artist album: ' + JSON.stringify(artistAlbums).substring(0, 100));
     let artistAlbumTracks = await getTracks(accessToken, artistAlbums.flatMap(album => album.trackIds));
     artistAlbumTracks = Array.from(new Set(artistAlbumTracks.map(track => track.uri))).map(uri => artistAlbumTracks.find(track => track.uri == uri));
-    console.log('artist album trakcs: ' + JSON.stringify(artistAlbumTracks).substring(0, 100));
     let artistAlbumTracksByAlbumId = groupTracksByAlbumId(artistAlbumTracks);
-    console.log('trakcs by album id tracks: ' + JSON.stringify(artistAlbumTracksByAlbumId).substring(0, 100));
 
     let popularTracksByAlbumId = {};
     for (let albumId in artistAlbumTracksByAlbumId) {
@@ -357,5 +363,5 @@ export async function execute(accessToken) {
     let popularTracks = Object.values(popularTracksByAlbumId).flat();
     console.log('Popular tracks: ' + JSON.stringify(popularTracks).substring(0, 100));
 
-    await createPlaylist(accessToken, 'Pop Spot', 'Liked Album Popular Songs', popularTracks.map(track => track.uri));
+    await createPlaylist(accessToken, 'Pop Spot', 'Liked Album Popular Songs', popularTracks.map(track => `spotify:track:${track.id}`));
 }
