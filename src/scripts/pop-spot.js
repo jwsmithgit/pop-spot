@@ -291,8 +291,16 @@ async function getTracks(accessToken, trackIds) {
     return tracks;
 }
 
-function getPopularTracks(tracks) {
-    return getOutlierTracks(tracks);
+function getPopularTracks(tracks, numDeviations = 1) {
+    const popularityScores = tracks.map((track) => track.popularity);
+    const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
+    const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
+    const stdDev = Math.sqrt(variance);
+
+    const filteredTracks = tracks.filter((track) => track.popularity > mean + numDeviations * stdDev);
+
+    return filteredTracks;
+
     const minPopularity = Math.min(...tracks.map(track => track.popularity));
     const maxPopularity = Math.max(...tracks.map(track => track.popularity));
     if (minPopularity == maxPopularity) return [];
@@ -369,16 +377,16 @@ async function createPlaylist(accessToken, name, description, trackUris) {
     }
 }
 
-function groupTracksByAlbumId(tracks) {
-    return tracks.reduce((result, track) => {
-        const albumId = track.albumId;
-        if (!result[albumId]) {
-            result[albumId] = [];
-        }
-        result[albumId].push(track);
-        return result;
-    }, {});
-}
+// function groupTracksByAlbumId(tracks) {
+//     return tracks.reduce((result, track) => {
+//         const albumId = track.albumId;
+//         if (!result[albumId]) {
+//             result[albumId] = [];
+//         }
+//         result[albumId].push(track);
+//         return result;
+//     }, {});
+// }
 
 export async function execute(accessToken) {
     // let artists = {};
@@ -394,6 +402,7 @@ export async function execute(accessToken) {
     artists = {...artists, ...await getArtists(accessToken, Object.values(albums).flatMap(album => album.artistIds))};
 
     let artistAlbums = await getArtistAlbums(accessToken, Object.values(artists).map(artist => artist.id));
+    console.log('Artist albums: ' + JSON.stringify(artistAlbums).substring(0, 100));
     albums = await getAlbums(accessToken, Object.values(artistAlbums).flatMap(artistAlbum => artistAlbum.albumIds));
     tracks = await getTracks(accessToken, Object.values(albums).flatMap(album => album.trackIds));
     let albumTracks = tracks.reduce((acc, track) => ({...acc, [track.id]: track}), {});
