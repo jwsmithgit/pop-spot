@@ -52,7 +52,7 @@ async function addAlbums(albums) {
     const skipAlbumTypes = ['single', 'compilation', 'appears_on', 'live', 'remix', 'audiobook'];
     for (let album of albums) {
         if (skipAlbumTypes.includes(album.album_type)) continue;
-        if (album.name.toLowerCase().includes('live') && album.tracks.items.map(track => track.name).all(trackName => trackName.toLowerCase().includes('live'))) continue;
+        if (album.name.toLowerCase().includes('live') && album.tracks.items.map(track => track.name).every(trackName => trackName.toLowerCase().includes('live'))) continue;
 
         const albumData = {
             id: album.id,
