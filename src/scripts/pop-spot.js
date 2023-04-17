@@ -65,6 +65,7 @@ async function addAlbums(albums) {
             id: album.id,
             artistIds: album.artists.map(artist => artist.id),
             trackIds: album.tracks.items.map(track => track.id),
+            popularity: album.popularity,
             releaseDate: album.release_date
         };
         await redisClient.setAlbumData(album.id, albumData);
@@ -397,11 +398,23 @@ export async function execute(accessToken) {
 
     let artists = await getLikedArtists(accessToken);
     artists = {...artists, ...await getArtists(accessToken, Object.values(albums).flatMap(album => album.artistIds))};
-
     let artistAlbums = await getArtistAlbums(accessToken, Object.values(artists).map(artist => artist.id));
+
     albums = await getAlbums(accessToken, Object.values(artistAlbums).flat());
+    let albumsByNames = {};
+    Object.values(albums).forEach(album => {
+        const albumKey = album.artistId + album.name;
+        if (!albumsByNames[albumKey]) albumsByNames[albumKey] = [];
+        albumsByNames[albumKey].push(album);
+    });
+    for (let nameAlbums of Object.values(albumsByNames))
+    {
+        nameAlbums = nameAlbums.sort((a,b) => a.popularity - b.popularity);
+        nameAlbums.shift();
+        nameAlbums.forEach(nameAlbum => delete albums[nameAlbum.id]);
+    }
+
     tracks = await getTracks(accessToken, Object.values(albums).flatMap(album => album.trackIds));
-    
     let albumTracks = {};
     Object.values(tracks).forEach(track => {
         if (!albumTracks[track.albumId]) albumTracks[track.albumId] = [];
