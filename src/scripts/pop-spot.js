@@ -388,10 +388,10 @@ export async function execute(accessToken) {
     let tracks = await getLikedTracks(accessToken);
     
     let albums = await getLikedAlbums(accessToken);
-    albums = {...albums, ...await getAlbums(accessToken, tracks.map(track => track.albumId))};
+    albums = {...albums, ...await getAlbums(accessToken, Object.values(tracks).map(track => track.albumId))};
 
     let artistIds = await getLikedArtists(accessToken);
-    artistIds = artistIds.concat(albums.flatMap(album => album.artistIds));
+    artistIds = artistIds.concat(Object.values(albums).flatMap(album => album.artistIds));
 
     let artists = await getArtists(accessToken, artistIds);
     let artistAlbums = await getArtistAlbums(accessToken, Object.values(artists).map(artist => artist.id));
