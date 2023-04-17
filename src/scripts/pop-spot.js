@@ -110,10 +110,10 @@ async function getLikedArtists(accessToken) {
         artists = {...artists, ...await addArtists(data.artists.items)};
 
         if (!data.next) break;
-        after = artistIds[-1];
+        after = data.artists.items.map(artist => artist.id)[-1];
     }
 
-    return artistIds;
+    return artists;
 }
 
 async function getLikedAlbums(accessToken) {
