@@ -352,6 +352,7 @@ export async function execute(accessToken) {
     likedAlbums = Array.from(new Set(likedAlbums.map(album => album.id))).map(id => likedAlbums.find(album => album.id == id));
     likedArtistIds = likedArtistIds.concat(likedAlbums.flatMap(album => album.artistIds));
     likedArtistIds = [...new Set(likedArtistIds)];
+    console.log('liked art id: ' + JSON.stringify(likedArtistIds).substring(0, 100));
 
     let artistAlbumIdsByArtistId = await getArtistAlbumIdsByArtistId(accessToken, likedArtistIds);
     console.log('artist albums: ' + JSON.stringify(artistAlbumIdsByArtistId[watchArtistId]));
