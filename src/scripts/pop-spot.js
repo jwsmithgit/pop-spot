@@ -7,7 +7,7 @@ async function fetchWithDelay(call, callData) {
     await new Promise(resolve => setTimeout(resolve, delay));
 
     console.log('calling: ' + JSON.stringify(call));
-    console.log('calling data: ' + JSON.stringify(callData));
+    // console.log('calling data: ' + JSON.stringify(callData));
 
     const response = await fetch(call, callData);
     console.log('response status: ' + response.status);
@@ -350,7 +350,7 @@ export async function execute(accessToken) {
     likedArtistIds = [...new Set(likedArtistIds)];
 
     let artistAlbumIdsByArtistId = await getArtistAlbumIdsByArtistId(accessToken, likedArtistIds);
-    console.log('Popular tracks: ' + JSON.stringify(artistAlbumIdsByArtistId[watchArtistId]));
+    console.log('artist albums: ' + JSON.stringify(artistAlbumIdsByArtistId[watchArtistId]));
     let artistAlbums = await getAlbums(accessToken, Object.values(artistAlbumIdsByArtistId).flat());
     let artistAlbumTracks = await getTracks(accessToken, artistAlbums.flatMap(album => album.trackIds));
     artistAlbumTracks = Array.from(new Set(artistAlbumTracks.map(track => track.uri))).map(uri => artistAlbumTracks.find(track => track.uri == uri));
