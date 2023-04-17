@@ -10,37 +10,47 @@ class RedisClient {
     await this.client.connect();
   }
 
-  async setArtistData(artistId, data) {
+  async setData(key, id, data) {
     await this.connect();
-    return await this.client.set(`artist:${artistId}`, JSON.stringify(data));
+    return await this.client.set(`${key}:${id}`, JSON.stringify(data));
+  }
+
+  async getData(key, id) {
+    await this.connect();
+    let data = await this.client.get(`${key}:${id}`);
+    return data ? JSON.parse(data) : null;
+  }
+
+  async setArtistData(artistId, data) {
+    return await this.setData('artist', artistId, data);
   }
 
   async getArtistData(artistId) {
-    await this.connect();
-    let data = await this.client.get(`artist:${artistId}`);
-    return data ? JSON.parse(data) : null;
+    return await this.getData('artist', artistId);
+  }
+  
+  async setArtistAlbumData(artistId, data) {
+    return await this.setData('artist:album', artistId, data);
+  }
+
+  async getArtistAlbumData(artistId) {
+    return await this.getData('artist:album', artistId);
   }
 
   async setAlbumData(albumId, data) {
-    await this.connect();
-    return await this.client.set(`album:${albumId}`, JSON.stringify(data));
+    return await this.setData('album', albumId, data);
   }
 
   async getAlbumData(albumId) {
-    await this.connect();
-    let data = await this.client.get(`album:${albumId}`);
-    return data ? JSON.parse(data) : null;
+    return await this.getData('album', albumId);
   }
 
   async setTrackData(trackId, data) {
-    await this.connect();
-    return await this.client.set(`track:${trackId}`, JSON.stringify(data));
+    return await this.setData('track', trackId, data);
   }
 
   async getTrackData(trackId) {
-    await this.connect();
-    let data = await this.client.get(`track:${trackId}`);
-    return data ? JSON.parse(data) : null;
+    return await this.getData('track', trackId);
   }
 }
 
