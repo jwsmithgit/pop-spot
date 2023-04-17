@@ -44,7 +44,6 @@ async function addArtists(artists) {
         };
         addedArtists.push(artistData);
     }
-    console.log('added art: ' + JSON.stringify(addedArtists));
     return addedArtists;
 }
 
@@ -96,11 +95,13 @@ async function getLikedArtists(accessToken) {
         });
 
         artists = artists.concat(addArtists(data.artists.items));
+        console.log('added art mid: ' + JSON.stringify(artists));
 
         if (!data.next) break;
         after = artistIds[-1];
     }
 
+    console.log('added art final: ' + JSON.stringify(artists));
     return artists;
 }
 
