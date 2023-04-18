@@ -418,7 +418,7 @@ export async function execute(accessToken) {
     const albumDev = getAlbumDev(Object.values(albums));
     let popTracks = Object.values(albumTracks).flatMap(tracks => {
         const artist = artists[tracks[0].artistIds[0]];
-        const album = albums[tracks[0]].albumId;
+        const album = albums[tracks[0].albumId];
         getPopTracks(tracks, album, artist, albumDev, artistDev);
     });
     popTracks = popTracks.sort((a, b) => {
