@@ -330,7 +330,7 @@ function getPopTracks(tracks, albums, artists) {
                 for (let track of sortedTracks)
                 {
                     if (track.popularity < albumTrackPopularity * 1.2) continue;
-                    popTracks = popTracks.concat(sortedTracks.slice(0, numTracks));
+                    popTracks.push(track);
                 }
             }
         }
