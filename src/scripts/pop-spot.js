@@ -291,32 +291,81 @@ async function getTracks(accessToken, trackIds) {
     return tracks;
 }
 
-function getArtistDev(artists) {
-    const popularityScores = artists.map((artist) => artist.popularity);
-    const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
-    const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
-    const stdDev = Math.sqrt(variance);
-    const numDev = mean * 0.01;// 0 pop mean => 0, 100 pop mean = 1
-    return numDev;
+function getPopTracks(tracks, albums, artists) {
+    const popTracks = [];
+    
+    // Calculate the mean popularity score for each album
+    const albumTrackPopularityScores = Object.values(albums).reduce((acc, album) => {
+        const albumTrackPopularityScores = album.trackIds.map((trackId) => tracks[trackId].popularity);
+        const albumTrackPopularityScore = albumTrackPopularityScores.reduce((acc, score) => acc + score, 0) / albumTrackPopularityScores.length;
+        acc[album.id] = albumTrackPopularityScore;
+        return acc;
+    }, {});
+    
+    // Calculate the mean popularity score for all albums by each artist
+    const artistAlbumPopularityScores = Object.values(artists).reduce((acc, artist) => {
+        const artistAlbumPopularityScores = artist.albumIds.map((albumId) => albums[albumId].popularity);
+        const artistAlbumPopularityScore = artistAlbumPopularityScores.reduce((acc, score) => acc + score, 0) / artistAlbumPopularityScores.length;
+        acc[artist.id] = artistAlbumPopularityScore;
+        return acc;
+      }, {});
+    
+    // Calculate the mean popularity score for all artists
+    const artistPopularityScores = Object.values(artists).map((artist) => artist.popularity);
+    const meanArtistPopularity = artistPopularityScores.reduce((acc, score) => acc + score, 0) / artistPopularityScores.length;
+    
+    // Loop over each album
+    for (let artistId in artists) {
+        const artistPopularity = artists[artistId].popularity;
+        const artistAlbumPopularity = artistAlbumPopularityScores[artistId];
+        
+        for (let albumId in artist.albumIds) {
+            const albumTrackPopularity = albumTrackPopularityScores[albumId];
+        
+            // Determine the number of tracks to include
+            // if (albumTrackPopularity >= albumThreshold) {
+            // numTracks = Math.ceil((albumPopularity / artistAlbumPopularity) * artistPopularity / meanArtistPopularity);
+            // }
+
+            // If there are any tracks on the album, add the most popular ones
+            let numTracks = Math.ceil((albumTrackPopularity / artistAlbumPopularity) * artistPopularity / meanArtistPopularity);
+            if (numTracks > 0) {
+                const sortedTracks = album.tracks.sort((a, b) => b.popularity - a.popularity);
+                popTracks.push(...sortedTracks.slice(0, numTracks));
+            }
+        }
+    }
+    
+    return popTracks;
 }
 
-function getAlbumDev(albums) {
-    const popularityScores = albums.map((album) => album.popularity);
-    const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
-    const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
-    const stdDev = Math.sqrt(variance);
-    const numDev = (1 - mean * 0.01);// 0 pop mean => 1, 100 pop mean = 0
-    return numDev;
-}
 
-function getPopTracks(tracks, albumDev, artistDev) {
-    const popularityScores = tracks.map((track) => track.popularity);
-    const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
-    const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
-    const stdDev = Math.sqrt(variance);
-    const numDev = (1 - mean * 0.01);
-    return tracks.filter((track) => track.popularity >= mean + stdDev * (numDev + albumDev + artistDev));
-}
+// function getArtistDev(artists) {
+//     const popularityScores = artists.map((artist) => artist.popularity);
+//     const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
+//     const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
+//     const stdDev = Math.sqrt(variance);
+//     const numDev = mean * 0.01;// 0 pop mean => 0, 100 pop mean = 1
+//     return numDev;
+// }
+
+// function getAlbumDev(albums) {
+//     const popularityScores = albums.map((album) => album.popularity);
+//     const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
+//     const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
+//     const stdDev = Math.sqrt(variance);
+//     const numDev = (1 - mean * 0.01);// 0 pop mean => 1, 100 pop mean = 0
+//     return numDev;
+// }
+
+// function getPopTracks(tracks, albumDev, artistDev) {
+//     const popularityScores = tracks.map((track) => track.popularity);
+//     const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
+//     const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
+//     const stdDev = Math.sqrt(variance);
+//     const numDev = (1 - mean * 0.01);
+//     return tracks.filter((track) => track.popularity >= mean + stdDev * (numDev + albumDev + artistDev));
+// }
 
 // const minPopularity = Math.min(...tracks.map(track => track.popularity));
 // const maxPopularity = Math.max(...tracks.map(track => track.popularity));
@@ -400,25 +449,30 @@ export async function execute(accessToken) {
 
     let artists = await getLikedArtists(accessToken);
     artists = {...artists, ...await getArtists(accessToken, Object.values(albums).flatMap(album => album.artistIds))};
-    
     let artistAlbums = await getArtistAlbums(accessToken, Object.values(artists).map(artist => artist.id));
+    for (let artistId in artistAlbums) artists[artistId].albumIds = artistAlbums[artistId];
+
     albums = await getAlbums(accessToken, Object.values(artistAlbums).flat());
 
     // let popAlbums = Object.values(artistAlbums).flatMap(albumIds => getPopAlbums(albumIds.map(albumId => albums[albumId]).filter(album => album)));
     // popAlbums = popAlbums.filter(album => album.artistIds.length == 1);
 
     tracks = await getTracks(accessToken, Object.values(albums).flatMap(album => album.trackIds));
-    let albumTracks = {};
-    Object.values(tracks).forEach(track => {
-        if (!albumTracks[track.albumId]) albumTracks[track.albumId] = [];
-        albumTracks[track.albumId].push(track);
-    });
+    // for (let )
+    // let albumTracks = {};
+    // Object.values(tracks).forEach(track => {
+    //     if (!albumTracks[track.albumId]) albumTracks[track.albumId] = [];
+    //     albumTracks[track.albumId].push(track.id);
+    // });
 
-    const artistDev = getArtistDev(Object.values(artists));
-    const albumDev = {};
-    for (let artistId in artistAlbums) albumDev[artistId] = getAlbumDev(artistAlbums[artistId].map(albumId => albums[albumId]).filter(album => album))
-    let popTracks = [];
-    for (let albumId in albumTracks) popTracks = popTracks.concat(getPopTracks(albumTracks[albumId], albumDev[albums[albumId].artistIds.find(artistId => artists[artistId])], artistDev));
+    let popTracks = getPopTracks(tracks, albums, artists);
+
+    // const artistDev = getArtistDev(Object.values(artists));
+    // const albumDev = {};
+    // for (let artistId in artistAlbums) albumDev[artistId] = getAlbumDev(artistAlbums[artistId].map(albumId => albums[albumId]).filter(album => album))
+    // let popTracks = [];
+    // for (let albumId in albumTracks) popTracks = popTracks.concat(getPopTracks(albumTracks[albumId], albumDev[albums[albumId].artistIds.find(artistId => artists[artistId])], artistDev));
+    
     popTracks = popTracks.sort((a, b) => {
         if (a.artistIds[0] != b.artistIds[0]) {
             // i guess this can happen if the main artist is not the album artist???
