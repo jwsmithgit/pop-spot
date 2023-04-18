@@ -406,7 +406,7 @@ export async function execute(accessToken) {
         {
             if (!albums[albumId])
             {
-                console.log('not here');
+                console.log(albumId);
             }
         }
     }
