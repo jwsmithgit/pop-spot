@@ -339,6 +339,11 @@ function getPopTracks(tracks, albums, artists) {
 
             // If there are any tracks on the album, add the most popular ones
             let numTracks = Math.ceil((albumTrackPopularity / artistAlbumPopularity) * artistPopularity / meanArtistPopularity);
+            console.log('strack');
+            console.log(albumTrackPopularity);
+            console.log(artistAlbumPopularity);
+            console.log(artistPopularity);
+            console.log(meanArtistPopularity);
             console.log(numTracks);
             if (numTracks > 0) {
                 const sortedTracks = album.tracks.sort((a, b) => b.popularity - a.popularity);
