@@ -329,6 +329,9 @@ function getPopTracks(tracks, albums, artists) {
             // let albumDeviations = (album.popularity - artistAlbumPopularity.mean) / artistAlbumPopularity.deviation;
             // if (albumTrackPopularity.mean < artistAlbumPopularity.mean - 1 * artistAlbumPopularity.deviation) continue;
 
+            if (album.popularity < artistAlbumPopularity.mean + artistAlbumPopularity.deviation) numDev += 1;
+            // else numDev += 1;
+            
             // if (album.id == '2YSBHo8EgsejAGlmoyChJR')
             // {
             //     console.log('log');
@@ -355,9 +358,6 @@ function getPopTracks(tracks, albums, artists) {
                     }
                 }
             }
-
-            if (album.popularity < artistAlbumPopularity.mean + artistAlbumPopularity.deviation) numDev += 1;
-            // else numDev += 1;
         }
     }
     
