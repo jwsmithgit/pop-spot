@@ -418,7 +418,7 @@ export async function execute(accessToken) {
     const albumDev = {};
     for (let artistId in artistAlbums) albumDev[artistId] = getAlbumDev(artistAlbums[artistId].map(albumId => albums[albumId]).filter(album => album))
     let popTracks = [];
-    for (let albumId in albumTracks) popTrack = popTracks.concat(getPopTracks(albumTracks[albumId], albumDev[albums[albumId].artistIds.find(artistId => artists[artistId])], artistDev));
+    for (let albumId in albumTracks) popTracks = popTracks.concat(getPopTracks(albumTracks[albumId], albumDev[albums[albumId].artistIds.find(artistId => artists[artistId])], artistDev));
     popTracks = popTracks.sort((a, b) => {
         if (a.artistIds[0] != b.artistIds[0]) {
             // i guess this can happen if the main artist is not the album artist???
