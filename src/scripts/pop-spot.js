@@ -81,9 +81,9 @@ async function addTracks(tracks) {
 
         const trackData = {
             id: track.id,
-            popularity: track.popularity,
             artistIds: track.artists.map(artist => artist.id),
             albumId: track.album.id,
+            popularity: track.popularity,
             trackNumber: track.track_number
         };
         await redisClient.setTrackData(track.id, trackData);
@@ -211,6 +211,7 @@ async function getArtistAlbums(accessToken, artistIds) {
                 }
             });
 
+            // data.items.map(item => item.id).foreach(albumId => albums[albumId] = {});
             albums = albums.concat(data.items.map(item => item.id));
 
             if (!data.next) break;
@@ -288,7 +289,7 @@ async function getTracks(accessToken, trackIds) {
     return tracks;
 }
 
-function getPopularTracks(tracks) {//, numDeviations = 2) {
+function getPopAlbums(tracks) {//, numDeviations = 2) {
     const popularityScores = tracks.map((track) => track.popularity);
     const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
     const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
@@ -298,44 +299,55 @@ function getPopularTracks(tracks) {//, numDeviations = 2) {
     const filteredTracks = tracks.filter((track) => track.popularity > mean + numDeviations * stdDev);
 
     return filteredTracks;
-
-    const minPopularity = Math.min(...tracks.map(track => track.popularity));
-    const maxPopularity = Math.max(...tracks.map(track => track.popularity));
-    if (minPopularity == maxPopularity) return [];
-    const popularity = minPopularity + (maxPopularity - minPopularity) * 0.9;
-    return tracks.filter(track => track.popularity >= popularity);
 }
 
-function getOutlierTracks(tracks) {
-    // Step 1: Sort the data
-    const sorted = tracks.sort((a, b) => a.popularity - b.popularity);
+function getPopTracks(albums) {//, numDeviations = 2) {
+    const popularityScores = albums.map((album) => album.popularity);
+    const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
+    const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
+    const stdDev = Math.sqrt(variance);
 
-    // Step 2: Calculate Q1 and Q3
-    const q1Index = Math.floor(sorted.length / 4);
-    const q3Index = Math.floor(3 * sorted.length / 4);
-    const q1 = sorted[q1Index].popularity;
-    const q3 = sorted[q3Index].popularity;
+    const numDeviations = 2 * (1 - mean * 0.01);// 0 pop mean => 2, 100 pop mean = 0
+    const filteredTracks = tracks.filter((track) => track.popularity > mean - numDeviations * stdDev);
 
-    // Step 3: Calculate IQR
-    const iqr = q3 - q1;
-
-    // // Step 4: Calculate lower outlier boundary
-    // const lowerBound = q1 - 1.5 * iqr;
-
-    // Step 5: Calculate upper outlier boundary
-    const upperBound = q3 + 1.5 * iqr;
-
-    // Step 6: Identify outliers
-    const outliers = [];
-    for (const track of tracks) {
-        // if (number < lowerBound || number > upperBound) {
-        if (track.popularity > upperBound) {
-            outliers.push(track);
-        }
-    }
-
-    return outliers;
+    return filteredTracks;
 }
+
+// const minPopularity = Math.min(...tracks.map(track => track.popularity));
+// const maxPopularity = Math.max(...tracks.map(track => track.popularity));
+// if (minPopularity == maxPopularity) return [];
+// const popularity = minPopularity + (maxPopularity - minPopularity) * 0.9;
+// return tracks.filter(track => track.popularity >= popularity);
+// function getOutlierTracks(tracks) {
+//     // Step 1: Sort the data
+//     const sorted = tracks.sort((a, b) => a.popularity - b.popularity);
+
+//     // Step 2: Calculate Q1 and Q3
+//     const q1Index = Math.floor(sorted.length / 4);
+//     const q3Index = Math.floor(3 * sorted.length / 4);
+//     const q1 = sorted[q1Index].popularity;
+//     const q3 = sorted[q3Index].popularity;
+
+//     // Step 3: Calculate IQR
+//     const iqr = q3 - q1;
+
+//     // // Step 4: Calculate lower outlier boundary
+//     // const lowerBound = q1 - 1.5 * iqr;
+
+//     // Step 5: Calculate upper outlier boundary
+//     const upperBound = q3 + 1.5 * iqr;
+
+//     // Step 6: Identify outliers
+//     const outliers = [];
+//     for (const track of tracks) {
+//         // if (number < lowerBound || number > upperBound) {
+//         if (track.popularity > upperBound) {
+//             outliers.push(track);
+//         }
+//     }
+
+//     return outliers;
+// }
 
 async function createPlaylist(accessToken, name, description, trackUris) {
     const data = await fetchWithDelay(`${API_BASE_URL}/me/playlists`, {
@@ -397,31 +409,19 @@ export async function execute(accessToken) {
     albums = {...albums, ...await getAlbums(accessToken, Object.values(tracks).map(track => track.albumId))};
 
     let artists = await getLikedArtists(accessToken);
-    artists = {...artists, ...await getArtists(accessToken, Object.values(albums).flatMap(album => album.artistIds))};
+    artists = {...artists, ...await getArtists(accessToken, Object.values(albums).filter(album => album.artistIds.lenght == 1).flatMap(album => album.artistIds))};
     let artistAlbums = await getArtistAlbums(accessToken, Object.values(artists).map(artist => artist.id));
-
     albums = await getAlbums(accessToken, Object.values(artistAlbums).flat());
-    let albumsByNames = {};
-    Object.values(albums).forEach(album => {
-        const albumKey = album.artistId + album.name;
-        if (!albumsByNames[albumKey]) albumsByNames[albumKey] = [];
-        albumsByNames[albumKey].push(album);
-    });
-    for (let nameAlbums of Object.values(albumsByNames))
-    {
-        nameAlbums = nameAlbums.sort((a,b) => a.popularity - b.popularity);
-        nameAlbums.shift();
-        nameAlbums.forEach(nameAlbum => delete albums[nameAlbum.id]);
-    }
+    let popAlbums = Object.values(artistAlbums).flatMap(albumIds => getPopAlbums(albumIds.map(albumId => albums[albumId])));
 
-    tracks = await getTracks(accessToken, Object.values(albums).flatMap(album => album.trackIds));
+    tracks = await getTracks(accessToken, Object.values(popAlbums).flatMap(album => album.trackIds));
     let albumTracks = {};
     Object.values(tracks).forEach(track => {
         if (!albumTracks[track.albumId]) albumTracks[track.albumId] = [];
         albumTracks[track.albumId].push(track);
     });
 
-    let popTracks = Object.values(albumTracks).flatMap(tracks => getPopularTracks(tracks));
+    let popTracks = Object.values(albumTracks).flatMap(tracks => getPopTracks(tracks));
     popTracks = popTracks.sort((a, b) => {
         if (a.artistIds[0] != b.artistIds[0]) {
             // i guess this can happen if the main artist is not the album artist???
