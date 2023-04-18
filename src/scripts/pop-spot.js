@@ -415,8 +415,9 @@ export async function execute(accessToken) {
     });
 
     const artistDev = getArtistDev(Object.values(artists));
-    const albumDev = Object.values(artistAlbums).flatMap(albumIds => getAlbumDev(albumIds.map(albumId => albums[albumId]).filter(album => album)));
-    let popTracks = Object.values(albumTracks).flatMap(tracks => getPopTracks(tracks, albumDev, artistDev));
+    const albumDev = {};
+    for (let artistId in artistAlbums) albumDev[artistId] = getAlbumDev(artistAlbums[artistId].map(albumId => albums[albumId]).filter(album => album))
+    let popTracks = Object.values(albumTracks).flatMap(tracks => getPopTracks(tracks, albumDev[tracks.artistIds.find(artistId => artists[artistId])], artistDev));
     popTracks = popTracks.sort((a, b) => {
         if (a.artistIds[0] != b.artistIds[0]) {
             // i guess this can happen if the main artist is not the album artist???
