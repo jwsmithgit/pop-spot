@@ -333,7 +333,7 @@ function getPopTracks(tracks, albums, artists) {
                 console.log(albumTrackPopularity.deviation);
                 console.log(albums[albumId].popularity);
                 console.log(albumDeviations);
-                console.log(albumTrackPopularity.mean + (1 - albumDeviations) * albumTrackPopularity.deviation);
+                console.log(albumTrackPopularity.mean + (1 - Math.max(0, albumDeviations)) * albumTrackPopularity.deviation);
             }
 
             // If there are any tracks on the album, add the most popular ones
