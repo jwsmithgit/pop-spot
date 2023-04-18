@@ -344,7 +344,7 @@ function getPopTracks(tracks, albums, artists) {
                 sortedTracks = sortedTracks.slice(0, numTracks);
                 for (let track of sortedTracks)
                 {
-                    if (track.popularity < albumTrackPopularity.mean + (10 * -albumDeviations) * albumTrackPopularity.deviation) continue;
+                    if (track.popularity < albumTrackPopularity.mean + (8 * -albumDeviations) * albumTrackPopularity.deviation) continue;
                     popTracks.push(track);
                 }
             }
