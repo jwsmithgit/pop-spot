@@ -289,7 +289,19 @@ async function getTracks(accessToken, trackIds) {
     return tracks;
 }
 
-function getPopAlbums(tracks) {//, numDeviations = 2) {
+function getPopAlbums(albums) {//, numDeviations = 2) {
+    const popularityScores = albums.map((album) => album.popularity);
+    const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
+    const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
+    const stdDev = Math.sqrt(variance);
+
+    const numDeviations = 2 * (1 - mean * 0.01);// 0 pop mean => 2, 100 pop mean = 0
+    const filteredTracks = albums.filter((album) => album.popularity > mean - numDeviations * stdDev);
+
+    return filteredTracks;
+}
+
+function getPopTracks(tracks) {//, numDeviations = 2) {
     const popularityScores = tracks.map((track) => track.popularity);
     const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
     const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
@@ -297,18 +309,6 @@ function getPopAlbums(tracks) {//, numDeviations = 2) {
 
     const numDeviations = 2 * (1 - mean * 0.01);// 0 pop mean => 2, 100 pop mean = 0
     const filteredTracks = tracks.filter((track) => track.popularity > mean + numDeviations * stdDev);
-
-    return filteredTracks;
-}
-
-function getPopTracks(albums) {//, numDeviations = 2) {
-    const popularityScores = albums.map((album) => album.popularity);
-    const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
-    const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
-    const stdDev = Math.sqrt(variance);
-
-    const numDeviations = 2 * (1 - mean * 0.01);// 0 pop mean => 2, 100 pop mean = 0
-    const filteredTracks = tracks.filter((track) => track.popularity > mean - numDeviations * stdDev);
 
     return filteredTracks;
 }
@@ -387,22 +387,7 @@ async function createPlaylist(accessToken, name, description, trackUris) {
     }
 }
 
-// function groupTracksByAlbumId(tracks) {
-//     return tracks.reduce((result, track) => {
-//         const albumId = track.albumId;
-//         if (!result[albumId]) {
-//             result[albumId] = [];
-//         }
-//         result[albumId].push(track);
-//         return result;
-//     }, {});
-// }
-
-export async function execute(accessToken) {
-    // let artists = {};
-    // let albums = {};
-    // let tracks = {};
-    
+export async function execute(accessToken) {    
     let tracks = await getLikedTracks(accessToken);
     
     let albums = await getLikedAlbums(accessToken);
@@ -435,25 +420,6 @@ export async function execute(accessToken) {
         return a.trackNumber - b.trackNumber;
     });
 
-    // let likedArtistIds = likedArtists.map(artist => artist.id);
-    // // if a track has one artist, add it to liked artists
-    // likedArtistIds = likedArtistIds.concat(likedTracks.filter(track => track.artistIds.length == 1).flatMap(track => track.artistIds));
-    // // otherwise add to liked albums to find album artist
-    // likedAlbums = likedAlbums.concat(await getAlbums(accessToken, likedTracks.filter(track => track.artistIds.length > 1).map(track => track.albumId)));
-    // likedAlbums = Array.from(new Set(likedAlbums.map(album => album.id))).map(id => likedAlbums.find(album => album.id == id));
-    // likedArtistIds = likedArtistIds.concat(likedAlbums.flatMap(album => album.artistIds));
-    // likedArtistIds = [...new Set(likedArtistIds)];
-    // console.log('liked art id: ' + JSON.stringify(likedArtistIds).substring(0, 100));
-
-    // let artistAlbumIds = await getArtistAlbumIds(accessToken, likedArtistIds);
-    // console.log('artist albums: ' + JSON.stringify(artistAlbumIdsByArtistId[watchArtistId]));
-    // let artistAlbums = await getAlbums(accessToken, Object.values(artistAlbumIdsByArtistId).flat());
-    // let artistAlbumTracks = await getTracks(accessToken, artistAlbums.flatMap(album => album.trackIds));
-    // artistAlbumTracks = Array.from(new Set(artistAlbumTracks.map(track => track.uri))).map(uri => artistAlbumTracks.find(track => track.uri == uri));
-    // let artistAlbumTracksByAlbumId = groupTracksByAlbumId(artistAlbumTracks);
-
-    // let popularTracks = Object.values(popularTracksByAlbumId).flat();
     // console.log('Popular tracks: ' + JSON.stringify(popularTracks).substring(0, 100));
-
     await createPlaylist(accessToken, 'Pop Spot', 'Liked Artist Popular Tracks', popTracks.map(track => `spotify:track:${track.id}`));
 }
