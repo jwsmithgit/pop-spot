@@ -60,7 +60,7 @@ async function addAlbums(albums) {
         if (skipAlbumTypes.includes(album.album_type)) continue;
         //album.name.toLowerCase().includes('live') && 
         if (album.tracks.items.map(track => track.name).every(trackName => trackName.toLowerCase().includes('live'))) continue;
-        if (album.artistIds.length > 1) continue;
+        if (album.artists.length > 1) continue;
 
         const albumData = {
             id: album.id,
