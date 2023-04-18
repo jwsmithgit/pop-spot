@@ -293,6 +293,10 @@ async function getTracks(accessToken, trackIds) {
 
 function getPopTracks(tracks, albums, artists) {
     const popTracks = [];
+
+    console.log('tracks: ' + JSON.stringify(tracks).substring(0, 100));
+    console.log('albums: ' + JSON.stringify(albums).substring(0, 100));
+    console.log('artists: ' + JSON.stringify(artists).substring(0, 100));
     
     // Calculate the mean popularity score for each album
     const albumTrackPopularityScores = Object.values(albums).reduce((acc, album) => {
