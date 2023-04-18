@@ -36,7 +36,8 @@ async function addArtists(artists) {
 
         const artistData = {
             id: artist.id,
-            name: artist.name
+            name: artist.name,
+            popularity: artist.popularity
         };
         await redisClient.setArtistData(artist.id, artistData);
         addedArtists[artist.id] = artistData;
@@ -290,29 +291,32 @@ async function getTracks(accessToken, trackIds) {
     return tracks;
 }
 
-function getPopAlbums(albums) {//, numDeviations = 2) {
-    // console.log(JSON.stringify(albums));
+function getArtistDev(artists) {
+    const popularityScores = artists.map((artist) => artist.popularity);
+    const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
+    const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
+    const stdDev = Math.sqrt(variance);
+    const numDev = mean * 0.01;// 0 pop mean => 0, 100 pop mean = 1
+    return stdDev * numDev;
+}
+
+function getAlbumDev(albums) {
     const popularityScores = albums.map((album) => album.popularity);
     const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
     const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
     const stdDev = Math.sqrt(variance);
-
-    const numDeviations = (1 - mean * 0.01);// 0 pop mean => 1, 100 pop mean = 0
-    const filteredTracks = albums.filter((album) => album.popularity >= mean - numDeviations * stdDev);
-
-    return filteredTracks;
+    const numDev = (1 - mean * 0.01);// 0 pop mean => 1, 100 pop mean = 0
+    return stdDev * numDev;
 }
 
-function getPopTracks(tracks) {//, numDeviations = 2) {
+function getPopTracks(tracks, album, artist, albumDev, artistDev) {
     const popularityScores = tracks.map((track) => track.popularity);
     const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
     const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
     const stdDev = Math.sqrt(variance);
-
-    const numDeviations = (1 - mean * 0.01);// 0 pop mean => 1, 100 pop mean = 0
-    const filteredTracks = tracks.filter((track) => track.popularity >= mean + numDeviations * stdDev);
-
-    return filteredTracks;
+    const numDev = (1 - mean * 0.01);
+    const dev = stdDev * numDev;
+    return tracks.filter((track) => track.popularity + album.popularity + artist.popularity >= mean + dev + albumDev + artistDev);
 }
 
 // const minPopularity = Math.min(...tracks.map(track => track.popularity));
@@ -400,17 +404,23 @@ export async function execute(accessToken) {
     let artistAlbums = await getArtistAlbums(accessToken, Object.values(artists).map(artist => artist.id));
     albums = await getAlbums(accessToken, Object.values(artistAlbums).flat());
 
-    let popAlbums = Object.values(artistAlbums).flatMap(albumIds => getPopAlbums(albumIds.map(albumId => albums[albumId]).filter(album => album)));
-    popAlbums = popAlbums.filter(album => album.artistIds.length == 1);
+    // let popAlbums = Object.values(artistAlbums).flatMap(albumIds => getPopAlbums(albumIds.map(albumId => albums[albumId]).filter(album => album)));
+    // popAlbums = popAlbums.filter(album => album.artistIds.length == 1);
 
-    tracks = await getTracks(accessToken, Object.values(popAlbums).flatMap(album => album.trackIds));
+    tracks = await getTracks(accessToken, Object.values(albums).flatMap(album => album.trackIds));
     let albumTracks = {};
     Object.values(tracks).forEach(track => {
         if (!albumTracks[track.albumId]) albumTracks[track.albumId] = [];
         albumTracks[track.albumId].push(track);
     });
 
-    let popTracks = Object.values(albumTracks).flatMap(tracks => getPopTracks(tracks));
+    const artistDev = getArtistDev(Object.values(artists));
+    const albumDev = getAlbumDev(Object.values(albums));
+    let popTracks = Object.values(albumTracks).flatMap(tracks => {
+        const artist = artists[tracks[0].artistIds[0]];
+        const album = albums[tracks[0]].albumId;
+        getPopTracks(tracks, album, artist, albumDev, artistDev);
+    });
     popTracks = popTracks.sort((a, b) => {
         if (a.artistIds[0] != b.artistIds[0]) {
             // i guess this can happen if the main artist is not the album artist???
