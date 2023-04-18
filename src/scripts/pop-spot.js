@@ -294,10 +294,6 @@ async function getTracks(accessToken, trackIds) {
 function getPopTracks(tracks, albums, artists) {
     const popTracks = [];
 
-    console.log('tracks: ' + JSON.stringify(tracks).substring(0, 200));
-    console.log('albums: ' + JSON.stringify(albums).substring(0, 200));
-    console.log('artists: ' + JSON.stringify(artists).substring(0, 200));
-    
     // Calculate the mean popularity score for each album
     const albumTrackPopularityScores = Object.values(albums).reduce((acc, album) => {
         const albumTrackPopularityScores = album.trackIds.map((trackId) => tracks[trackId].popularity);
@@ -305,8 +301,6 @@ function getPopTracks(tracks, albums, artists) {
         acc[album.id] = albumTrackPopularityScore;
         return acc;
     }, {});
-    
-    console.log('tracks: ' + JSON.stringify(albumTrackPopularityScores).substring(0, 200));
     
     // Calculate the mean popularity score for all albums by each artist
     const artistAlbumPopularityScores = Object.values(artists).reduce((acc, artist) => {
@@ -316,14 +310,10 @@ function getPopTracks(tracks, albums, artists) {
         return acc;
       }, {});
       
-    console.log('tracks: ' + JSON.stringify(artistAlbumPopularityScores).substring(0, 200));
-    
     // Calculate the mean popularity score for all artists
     const artistPopularityScores = Object.values(artists).map((artist) => artist.popularity);
     const meanArtistPopularity = artistPopularityScores.reduce((acc, score) => acc + score, 0) / artistPopularityScores.length;
     
-    console.log('tracks: ' + JSON.stringify(artistPopularityScores).substring(0, 200));
-
     // Loop over each album
     for (let artistId in artists) {
         const artistPopularity = artists[artistId].popularity;
@@ -339,12 +329,6 @@ function getPopTracks(tracks, albums, artists) {
 
             // If there are any tracks on the album, add the most popular ones
             let numTracks = Math.ceil((albumTrackPopularity / artistAlbumPopularity) * artistPopularity / meanArtistPopularity);
-            console.log('strack');
-            console.log(albumTrackPopularity);
-            console.log(artistAlbumPopularity);
-            console.log(artistPopularity);
-            console.log(meanArtistPopularity);
-            console.log(numTracks);
             if (numTracks > 0) {
                 const sortedTracks = albums[albumId].trackIds.sort((a, b) => tracks[b].popularity - tracks[a].popularity);
                 popTracks.push(...sortedTracks.slice(0, numTracks));
