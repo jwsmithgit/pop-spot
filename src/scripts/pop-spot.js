@@ -60,6 +60,7 @@ async function addAlbums(albums) {
         if (skipAlbumTypes.includes(album.album_type)) continue;
         //album.name.toLowerCase().includes('live') && 
         if (album.tracks.items.map(track => track.name).every(trackName => trackName.toLowerCase().includes('live'))) continue;
+        if (album.artistIds.length > 1) continue;
 
         const albumData = {
             id: album.id,
@@ -398,20 +399,8 @@ export async function execute(accessToken) {
     artists = {...artists, ...await getArtists(accessToken, Object.values(albums).flatMap(album => album.artistIds))};
     let artistAlbums = await getArtistAlbums(accessToken, Object.values(artists).map(artist => artist.id));
     albums = await getAlbums(accessToken, Object.values(artistAlbums).flat());
-    console.log(Object.values(albums).some(album => album == null));
 
-    for (let albumsIds of Object.values(artistAlbums))
-    {
-        for (let albumId of albumsIds)
-        {
-            if (!albums[albumId])
-            {
-                console.log(albumId);
-            }
-        }
-    }
-
-    let popAlbums = Object.values(artistAlbums).flatMap(albumIds => getPopAlbums(albumIds.map(albumId => albums[albumId])));
+    let popAlbums = Object.values(artistAlbums).flatMap(albumIds => getPopAlbums(albumIds.map(albumId => albums[albumId]).filter(album => album)));
     popAlbums = popAlbums.filter(album => album.artistIds.length == 1);
 
     tracks = await getTracks(accessToken, Object.values(popAlbums).flatMap(album => album.trackIds));
