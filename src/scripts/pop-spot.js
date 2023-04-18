@@ -453,6 +453,7 @@ export async function execute(accessToken) {
     for (let artistId in artistAlbums) artists[artistId].albumIds = artistAlbums[artistId];
 
     albums = await getAlbums(accessToken, Object.values(artistAlbums).flat());
+    for (artistId in artists) artists[artistId].albumIds = artists[artistId].albumIds.filter(albumId => albums[albumId]);
 
     // let popAlbums = Object.values(artistAlbums).flatMap(albumIds => getPopAlbums(albumIds.map(albumId => albums[albumId]).filter(album => album)));
     // popAlbums = popAlbums.filter(album => album.artistIds.length == 1);
