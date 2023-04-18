@@ -420,7 +420,7 @@ export async function execute(accessToken) {
     let popTracks = Object.values(albumTracks).flatMap(tracks => {
         // const artist = artists[tracks[0].artistIds[0]];
         const album = albums[tracks[0].albumId];
-        getPopTracks(tracks, album, albumDev);//, artist, artistDev);
+        return getPopTracks(tracks, album, albumDev);//, artist, artistDev);
     });
     popTracks = popTracks.sort((a, b) => {
         if (a.artistIds[0] != b.artistIds[0]) {
