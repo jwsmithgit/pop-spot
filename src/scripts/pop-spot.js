@@ -309,14 +309,15 @@ function getAlbumDev(albums) {
     return stdDev * numDev;
 }
 
-function getPopTracks(tracks, album, artist, albumDev, artistDev) {
+function getPopTracks(tracks, album, albumDev) {//, artist, artistDev) {
     const popularityScores = tracks.map((track) => track.popularity);
     const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
     const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
     const stdDev = Math.sqrt(variance);
     const numDev = (1 - mean * 0.01);
     const dev = stdDev * numDev;
-    return tracks.filter((track) => track.popularity + album.popularity + artist.popularity >= mean + dev + albumDev + artistDev);
+    // + artist.popularity + artistDev
+    return tracks.filter((track) => track.popularity + album.popularity >= mean + dev + albumDev);
 }
 
 // const minPopularity = Math.min(...tracks.map(track => track.popularity));
@@ -414,12 +415,12 @@ export async function execute(accessToken) {
         albumTracks[track.albumId].push(track);
     });
 
-    const artistDev = getArtistDev(Object.values(artists));
+    // const artistDev = getArtistDev(Object.values(artists));
     const albumDev = getAlbumDev(Object.values(albums));
     let popTracks = Object.values(albumTracks).flatMap(tracks => {
-        const artist = artists[tracks[0].artistIds[0]];
+        // const artist = artists[tracks[0].artistIds[0]];
         const album = albums[tracks[0].albumId];
-        getPopTracks(tracks, album, artist, albumDev, artistDev);
+        getPopTracks(tracks, album, albumDev);//, artist, artistDev);
     });
     popTracks = popTracks.sort((a, b) => {
         if (a.artistIds[0] != b.artistIds[0]) {
