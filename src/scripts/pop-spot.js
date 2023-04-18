@@ -290,13 +290,14 @@ async function getTracks(accessToken, trackIds) {
 }
 
 function getPopAlbums(albums) {//, numDeviations = 2) {
+    console.log(JSON.stringify(albums));
     const popularityScores = albums.map((album) => album.popularity);
     const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
     const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
     const stdDev = Math.sqrt(variance);
 
     const numDeviations = 2 * (1 - mean * 0.01);// 0 pop mean => 2, 100 pop mean = 0
-    const filteredTracks = albums.filter((album) => album.popularity > mean - numDeviations * stdDev);
+    const filteredTracks = albums.filter((album) => album.popularity >= mean - numDeviations * stdDev);
 
     return filteredTracks;
 }
@@ -308,7 +309,7 @@ function getPopTracks(tracks) {//, numDeviations = 2) {
     const stdDev = Math.sqrt(variance);
 
     const numDeviations = 2 * (1 - mean * 0.01);// 0 pop mean => 2, 100 pop mean = 0
-    const filteredTracks = tracks.filter((track) => track.popularity > mean + numDeviations * stdDev);
+    const filteredTracks = tracks.filter((track) => track.popularity >= mean + numDeviations * stdDev);
 
     return filteredTracks;
 }
