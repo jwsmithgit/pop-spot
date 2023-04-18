@@ -395,10 +395,11 @@ export async function execute(accessToken) {
     albums = {...albums, ...await getAlbums(accessToken, Object.values(tracks).map(track => track.albumId))};
 
     let artists = await getLikedArtists(accessToken);
-    artists = {...artists, ...await getArtists(accessToken, Object.values(albums).filter(album => album.artistIds.lenght == 1).flatMap(album => album.artistIds))};
+    artists = {...artists, ...await getArtists(accessToken, Object.values(albums).flatMap(album => album.artistIds))};
     let artistAlbums = await getArtistAlbums(accessToken, Object.values(artists).map(artist => artist.id));
     albums = await getAlbums(accessToken, Object.values(artistAlbums).flat());
     let popAlbums = Object.values(artistAlbums).flatMap(albumIds => getPopAlbums(albumIds.map(albumId => albums[albumId])));
+    popAlbums = popAlbums.filter(album => album.artistIds.length == 1);
 
     tracks = await getTracks(accessToken, Object.values(popAlbums).flatMap(album => album.trackIds));
     let albumTracks = {};
