@@ -332,7 +332,7 @@ function getPopTracks(tracks, albums, artists) {
                 const sortedTracks = albums[albumId].trackIds.map(trackId => tracks[trackId]).sort((a, b) => b.popularity - a.popularity).slice(0, numTracks);
                 for (let track of sortedTracks)
                 {
-                    if (track.popularity < albumTrackPopularity.mean - albumDeviations * albumTrackPopularity.deviation) continue;
+                    if (track.popularity < albumTrackPopularity.mean - 1.5 * albumDeviations * albumTrackPopularity.deviation) continue;
                     popTracks.push(track);
                 }
             }
