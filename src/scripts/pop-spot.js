@@ -330,8 +330,8 @@ function getPopTracks(tracks, albums, artists) {
             // If there are any tracks on the album, add the most popular ones
             let numTracks = Math.ceil((albumTrackPopularity / artistAlbumPopularity) * artistPopularity / meanArtistPopularity);
             if (numTracks > 0) {
-                const sortedTracks = albums[albumId].trackIds.sort((a, b) => tracks[b].popularity - tracks[a].popularity);
-                popTracks.push(...sortedTracks.slice(0, numTracks));
+                const sortedTracks = albums[albumId].trackIds.map(trackId => tracks[trackId]).sort((a, b) => b.popularity - a.popularity);
+                popTracks = popTracks.concat(sortedTracks.slice(0, numTracks));
             }
         }
     }
