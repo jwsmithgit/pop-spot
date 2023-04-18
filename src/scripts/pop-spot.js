@@ -346,7 +346,7 @@ function getPopTracks(tracks, albums, artists) {
             console.log(meanArtistPopularity);
             console.log(numTracks);
             if (numTracks > 0) {
-                const sortedTracks = album.tracks.sort((a, b) => b.popularity - a.popularity);
+                const sortedTracks = albums[albumId].trackIds.sort((a, b) => tracks[b].popularity - tracks[a].popularity);
                 popTracks.push(...sortedTracks.slice(0, numTracks));
             }
         }
