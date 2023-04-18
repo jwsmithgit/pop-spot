@@ -319,7 +319,7 @@ function getPopTracks(tracks, albums, artists) {
     // Loop over each album
     for (let artistId in artists) {
         const artistAlbumPopularity = artistAlbumPopularityScores[artistId];
-        const meanArtistAlbumTrackPopularity = artists[artistId].trackIds.map(albumId => albumTrackPopularityScores[albumId]).reduce((sum, score, index, array) => sum + score / array.length, 0);
+        // const meanArtistAlbumTrackPopularity = artists[artistId].trackIds.map(albumId => albumTrackPopularityScores[albumId]).reduce((sum, score, index, array) => sum + score / array.length, 0);
         
         for (let albumId of artists[artistId].albumIds) {
             const albumTrackPopularity = albumTrackPopularityScores[albumId];
