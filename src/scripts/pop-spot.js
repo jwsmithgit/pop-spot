@@ -323,7 +323,7 @@ function getPopTracks(tracks, albums, artists) {
         
         for (let albumId of artists[artistId].albumIds) {
             const albumTrackPopularity = albumTrackPopularityScores[albumId];
-            let albumDeviations = (albums[albumId].popularity - albumTrackPopularity.mean) / albumTrackPopularity.deviation;
+            let albumDeviations = (albums[albumId].popularity - artistAlbumPopularity.mean) / artistAlbumPopularity.deviation;
             // if (albumTrackPopularity.mean < artistAlbumPopularity.mean - 1 * artistAlbumPopularity.deviation) continue;
 
             if (albumId == '2YSBHo8EgsejAGlmoyChJR')
@@ -332,7 +332,8 @@ function getPopTracks(tracks, albums, artists) {
                 console.log(albumTrackPopularity.mean);
                 console.log(albumTrackPopularity.deviation);
                 console.log(albums[albumId].popularity);
-                console.log(albumTrackPopularity.mean + (1 - albumDeviations) * albumTrackPopularity.deviation)
+                console.log(albumDeviations);
+                console.log(albumTrackPopularity.mean + (1 - albumDeviations) * albumTrackPopularity.deviation);
             }
 
             // If there are any tracks on the album, add the most popular ones
