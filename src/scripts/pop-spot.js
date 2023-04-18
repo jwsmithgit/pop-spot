@@ -290,7 +290,7 @@ async function getTracks(accessToken, trackIds) {
 }
 
 function getPopAlbums(albums) {//, numDeviations = 2) {
-    console.log(JSON.stringify(albums));
+    // console.log(JSON.stringify(albums));
     const popularityScores = albums.map((album) => album.popularity);
     const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
     const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
@@ -392,15 +392,25 @@ export async function execute(accessToken) {
     let tracks = await getLikedTracks(accessToken);
     
     let albums = await getLikedAlbums(accessToken);
-    console.log(Object.values(albums).some(album => album == null));
     albums = {...albums, ...await getAlbums(accessToken, Object.values(tracks).map(track => track.albumId))};
-    console.log(Object.values(albums).some(album => album == null));
 
     let artists = await getLikedArtists(accessToken);
     artists = {...artists, ...await getArtists(accessToken, Object.values(albums).flatMap(album => album.artistIds))};
     let artistAlbums = await getArtistAlbums(accessToken, Object.values(artists).map(artist => artist.id));
     albums = await getAlbums(accessToken, Object.values(artistAlbums).flat());
     console.log(Object.values(albums).some(album => album == null));
+
+    for (let albumsIds of Object.values(artistAlbums))
+    {
+        for (let albumId of albumsIds)
+        {
+            if (!albums[albumId])
+            {
+                console.log('not here');
+            }
+        }
+    }
+
     let popAlbums = Object.values(artistAlbums).flatMap(albumIds => getPopAlbums(albumIds.map(albumId => albums[albumId])));
     popAlbums = popAlbums.filter(album => album.artistIds.length == 1);
 
