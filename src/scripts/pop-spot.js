@@ -321,17 +321,17 @@ function getPopTracks(tracks, albums, artists) {
         
         for (let albumId of artists[artistId].albumIds) {
             const albumTrackPopularity = albumTrackPopularityScores[albumId];
-        
-            // Determine the number of tracks to include
-            // if (albumTrackPopularity >= albumThreshold) {
-            // numTracks = Math.ceil((albumPopularity / artistAlbumPopularity) * artistPopularity / meanArtistPopularity);
-            // }
+            if (albumTrackPopularity < artistAlbumPopularity * 0.8) continue;
 
             // If there are any tracks on the album, add the most popular ones
             let numTracks = Math.ceil((albumTrackPopularity / artistAlbumPopularity) * artistPopularity / meanArtistPopularity);
             if (numTracks > 0) {
                 const sortedTracks = albums[albumId].trackIds.map(trackId => tracks[trackId]).sort((a, b) => b.popularity - a.popularity);
-                popTracks = popTracks.concat(sortedTracks.slice(0, numTracks));
+                for (let track of sortedTracks)
+                {
+                    if (track.popularity < albumTrackPopularity * 1.2) continue;
+                    popTracks = popTracks.concat(sortedTracks.slice(0, numTracks));
+                }
             }
         }
     }
