@@ -321,33 +321,40 @@ function getPopTracks(tracks, albums, artists) {
         const artistAlbumPopularity = artistAlbumPopularityScores[artistId];
         // const meanArtistAlbumTrackPopularity = artists[artistId].trackIds.map(albumId => albumTrackPopularityScores[albumId]).reduce((sum, score, index, array) => sum + score / array.length, 0);
         
-        for (let albumId of artists[artistId].albumIds) {
-            const albumTrackPopularity = albumTrackPopularityScores[albumId];
-            let albumDeviations = (albums[albumId].popularity - artistAlbumPopularity.mean) / artistAlbumPopularity.deviation;
+        let artistAlbums = artists[artistId].albumIds.map(albumId => albums[albumId]);
+        artistAlbums = artistAlbums.sort((a, b) => b.popularity - a.popularity);
+        let numDev = 1;
+        for (let album of artistAlbums) {
+            const albumTrackPopularity = albumTrackPopularityScores[album.id];
+            // let albumDeviations = (album.popularity - artistAlbumPopularity.mean) / artistAlbumPopularity.deviation;
             // if (albumTrackPopularity.mean < artistAlbumPopularity.mean - 1 * artistAlbumPopularity.deviation) continue;
 
-            if (albumId == '2YSBHo8EgsejAGlmoyChJR')
-            {
-                console.log('log');
-                console.log(albumTrackPopularity.mean);
-                console.log(albumTrackPopularity.deviation);
-                console.log(albums[albumId].popularity);
-                console.log(albumDeviations);
-                console.log(albumTrackPopularity.mean + (10 * - Math.max(0, albumDeviations)) * albumTrackPopularity.deviation);
-            }
+            // if (album.id == '2YSBHo8EgsejAGlmoyChJR')
+            // {
+            //     console.log('log');
+            //     console.log(albumTrackPopularity.mean);
+            //     console.log(albumTrackPopularity.deviation);
+            //     console.log(album.popularity);
+            //     console.log(albumDeviations);
+            //     console.log(albumTrackPopularity.mean + (10 * - Math.max(0, albumDeviations)) * albumTrackPopularity.deviation);
+            // }
 
             // If there are any tracks on the album, add the most popular ones
             // (albumTrackPopularity.mean / meanArtistAlbumTrackPopularity) * 
-            let numTracks = Math.ceil((albums[albumId].popularity / artistAlbumPopularity.mean) * (artists[artistId].popularity / meanArtistPopularity));
+            let numTracks = Math.ceil((album.popularity / artistAlbumPopularity.mean) * (artists[artistId].popularity / meanArtistPopularity));
             if (numTracks > 0) {
-                let sortedTracks = albums[albumId].trackIds.map(trackId => tracks[trackId]).sort((a, b) => b.popularity - a.popularity)
-                sortedTracks = sortedTracks.slice(0, numTracks);
+                let sortedTracks = album.trackIds.map(trackId => tracks[trackId]).sort((a, b) => b.popularity - a.popularity);
+                // sortedTracks = sortedTracks.slice(0, numTracks);
                 for (let track of sortedTracks)
                 {
-                    if (track.popularity < albumTrackPopularity.mean + (artists[artistId].albumIds.length * -albumDeviations) * albumTrackPopularity.deviation) continue;
+                    // (artists[artistId].albumIds.length * -albumDeviations)
+                    if (track.popularity < albumTrackPopularity.mean + numDev * albumTrackPopularity.deviation) continue;
                     popTracks.push(track);
                 }
             }
+
+            if (album.popularity < artistAlbumPopularity.mean + artistAlbumPopularity.deviation) numDev += 1;
+            // else numDev += 1;
         }
     }
     
