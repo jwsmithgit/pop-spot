@@ -317,7 +317,7 @@ function getPopTracks(tracks, album, albumDev) {//, artist, artistDev) {
     const numDev = (1 - mean * 0.01);
     const dev = stdDev * numDev;
     // + artist.popularity + artistDev
-    return tracks.filter((track) => track.popularity + album.popularity >= mean + dev + albumDev);
+    return tracks.filter((track) => (track.popularity + album.popularity) * 0.5 >= mean + dev + albumDev);
 }
 
 // const minPopularity = Math.min(...tracks.map(track => track.popularity));
