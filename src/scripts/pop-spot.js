@@ -297,7 +297,7 @@ function getArtistDev(artists) {
     const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
     const stdDev = Math.sqrt(variance);
     const numDev = mean * 0.01;// 0 pop mean => 0, 100 pop mean = 1
-    return stdDev * numDev;
+    return numDev;
 }
 
 function getAlbumDev(albums) {
@@ -306,18 +306,16 @@ function getAlbumDev(albums) {
     const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
     const stdDev = Math.sqrt(variance);
     const numDev = (1 - mean * 0.01);// 0 pop mean => 1, 100 pop mean = 0
-    return stdDev * numDev;
+    return numDev;
 }
 
-function getPopTracks(tracks, album, albumDev) {//, artist, artistDev) {
+function getPopTracks(tracks, albumDev, artistDev) {
     const popularityScores = tracks.map((track) => track.popularity);
     const mean = popularityScores.reduce((acc, score) => acc + score, 0) / popularityScores.length;
     const variance = popularityScores.reduce((acc, score) => acc + Math.pow(score - mean, 2), 0) / popularityScores.length;
     const stdDev = Math.sqrt(variance);
     const numDev = (1 - mean * 0.01);
-    const dev = stdDev * numDev;
-    // + artist.popularity + artistDev
-    return tracks.filter((track) => (track.popularity + album.popularity) * 0.5 >= mean + dev + albumDev);
+    return tracks.filter((track) => track.popularity >= mean + stdDev * (numDev + albumDev + artistDev));
 }
 
 // const minPopularity = Math.min(...tracks.map(track => track.popularity));
@@ -402,6 +400,7 @@ export async function execute(accessToken) {
 
     let artists = await getLikedArtists(accessToken);
     artists = {...artists, ...await getArtists(accessToken, Object.values(albums).flatMap(album => album.artistIds))};
+    
     let artistAlbums = await getArtistAlbums(accessToken, Object.values(artists).map(artist => artist.id));
     albums = await getAlbums(accessToken, Object.values(artistAlbums).flat());
 
@@ -415,13 +414,9 @@ export async function execute(accessToken) {
         albumTracks[track.albumId].push(track);
     });
 
-    // const artistDev = getArtistDev(Object.values(artists));
-    const albumDev = getAlbumDev(Object.values(albums));
-    let popTracks = Object.values(albumTracks).flatMap(tracks => {
-        // const artist = artists[tracks[0].artistIds[0]];
-        const album = albums[tracks[0].albumId];
-        return getPopTracks(tracks, album, albumDev);//, artist, artistDev);
-    });
+    const artistDev = getArtistDev(Object.values(artists));
+    const albumDev = Object.values(artistAlbums).flatMap(albumIds => getAlbumDev(albumIds.map(albumId => albums[albumId]).filter(album => album)));
+    let popTracks = Object.values(albumTracks).flatMap(tracks => getPopTracks(tracks, albumDev, artistDev));
     popTracks = popTracks.sort((a, b) => {
         if (a.artistIds[0] != b.artistIds[0]) {
             // i guess this can happen if the main artist is not the album artist???
