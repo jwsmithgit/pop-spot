@@ -328,6 +328,13 @@ function getPopTracks(tracks, albums, artists) {
             // //if (artistAlbumPopularityMax != artistAlbumPopularityMin) 
             // numDev += (artistAlbumPopularityMax - album.popularity) / 100;
 
+            if (album.id == '0JyEWuZBMpLOezjt2DDt8M')
+            {
+                console.log('log');
+                console.log(JSON.stringify(albums.map(album => album.popularity)));
+                console.log(JSON.stringify(tracks.map(track => track.popularity)));
+            }
+
             // if (album.id == '2YSBHo8EgsejAGlmoyChJR')
             // {
             //     console.log('log');
