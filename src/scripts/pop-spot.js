@@ -386,7 +386,7 @@ export async function execute(accessToken) {
     let popTracksByName = {};
     popTracks.forEach(track => {
         const key = JSON.stringify(track.artistIds) + track.name;
-        if (popTracksByName[!key] || track.popularity > popTracksByName[key].popularity); 
+        if (!popTracksByName[key] || track.popularity > popTracksByName[key].popularity); 
     });
     popTracks = Object.values(popTracksByName);
 
