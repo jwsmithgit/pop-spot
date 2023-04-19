@@ -283,7 +283,7 @@ function getPopTracks(tracks, albums, artists) {
         const albumTrackPopularityMean = albumTrackPopularityScores.reduce((acc, score) => acc + score, 0) / albumTrackPopularityScores.length;
         const albumTrackPopularityDeviation = Math.sqrt(albumTrackPopularityScores.reduce((acc, score) => acc + Math.pow(score - albumTrackPopularityMean, 2), 0) / albumTrackPopularityScores.length);
 
-        const filteredAlbumTrackPopularityScores = albumTrackPopularityScores.filter((score) => score >= albumTrackPopularityMean - albumTrackPopularityDeviation);
+        const filteredAlbumTrackPopularityScores = albumTrackPopularityScores.filter((score) => score >= albumTrackPopularityMean - 0.5 * albumTrackPopularityDeviation);
 
         const filteredAlbumTrackPopularityMean = filteredAlbumTrackPopularityScores.reduce((acc, score) => acc + score, 0) / filteredAlbumTrackPopularityScores.length;
         const filteredAlbumTrackPopularityDeviation = Math.sqrt(filteredAlbumTrackPopularityScores.reduce((acc, score) => acc + Math.pow(score - filteredAlbumTrackPopularityMean, 2), 0) / filteredAlbumTrackPopularityScores.length);
@@ -291,7 +291,6 @@ function getPopTracks(tracks, albums, artists) {
         acc[album.id] = { mean: filteredAlbumTrackPopularityMean, deviation: filteredAlbumTrackPopularityDeviation };
         return acc;
     }, {});
-    console.log(JSON.stringify(albumTrackPopularityScores).substring(0,100));
 
     const artistAlbumPopularityScores = Object.values(artists).reduce((acc, artist) => {
         const artistAlbumPopularityScores = artist.albumIds
@@ -300,7 +299,7 @@ function getPopTracks(tracks, albums, artists) {
         const artistAlbumPopularityMean = artistAlbumPopularityScores.reduce((acc, score) => acc + score, 0) / artistAlbumPopularityScores.length;
         const artistAlbumPopularityDeviation = Math.sqrt(artistAlbumPopularityScores.reduce((acc, score) => acc + Math.pow(score - artistAlbumPopularityMean, 2), 0) / artistAlbumPopularityScores.length);
 
-        const filteredArtistAlbumPopularityScores = artistAlbumPopularityScores.filter((score) => score >= artistAlbumPopularityMean - artistAlbumPopularityDeviation);
+        const filteredArtistAlbumPopularityScores = artistAlbumPopularityScores.filter((score) => score >= artistAlbumPopularityMean - 0.5 * artistAlbumPopularityDeviation);
 
         const filteredArtistAlbumPopularityMean = filteredArtistAlbumPopularityScores.reduce((acc, score) => acc + score, 0) / filteredArtistAlbumPopularityScores.length;
         const filteredArtistAlbumPopularityDeviation = Math.sqrt(filteredArtistAlbumPopularityScores.reduce((acc, score) => acc + Math.pow(score - filteredArtistAlbumPopularityMean, 2), 0) / filteredArtistAlbumPopularityScores.length);
@@ -314,8 +313,6 @@ function getPopTracks(tracks, albums, artists) {
         const artistAlbumPopularity = artistAlbumPopularityScores[artist.id];
 
         const artistAlbums = artists[artist.id].albumIds.map(albumId => albums[albumId]);
-        // artistAlbums = artistAlbums.sort((a, b) => b.popularity - a.popularity);
-
         for (let album of artistAlbums) {
             const albumTrackPopularity = albumTrackPopularityScores[album.id];
             if (albumTrackPopularity.deviation == 0) continue;
@@ -327,7 +324,6 @@ function getPopTracks(tracks, albums, artists) {
             const albumDeviation = Math.max(0, albumThreshold - album.popularity);
 
             const albumTracks = album.trackIds.map(trackId => tracks[trackId]).filter(track => track.popularity >= albumTrackPopularity.mean + 0.5 * albumTrackPopularity.deviation + 0.5 * albumDeviation);
-            // console.log(JSON.stringify(albumTracks).substring(0,100));
             popTracks = popTracks.concat(albumTracks);
         }
     }
