@@ -27,10 +27,17 @@ class Mutex {
   }
 }
 
+let instance = null;
+
 class RedisClient {
   constructor(redisUrl) {
-    this.client = {};
-    this.mutex = new Mutex();
+    if (!instance) {
+      instance = this;
+      this.client = {};
+      this.mutex = new Mutex();
+    }
+
+    return instance;
     // this.client = redis.createClient({ url: redisUrl });
   }
 
