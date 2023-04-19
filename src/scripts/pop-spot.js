@@ -319,7 +319,7 @@ function getPopTracks(tracks, albums, artists) {
             // if (album.popularity < artistAlbumPopularity.mean + artistAlbumPopularity.deviation) numDev += 1;
             // else numDev += 1;
 
-            let numDev = 0.5;
+            let numDev = 1;
             // if (album.popularity < artistAlbumPopularity.mean + artistAlbumPopularity.deviation) numDev += 0.5;
             numDev += (1 - (album.popularity * 0.01));
             if (artistAlbumPopularityMax != artistAlbumPopularityMin) numDev += (artistAlbumPopularityMax - album.popularity)/(artistAlbumPopularityMax - artistAlbumPopularityMin);
