@@ -32,35 +32,25 @@ async function addArtists(artists) {
     let addedArtists = {};
     const skipGenres = ['asmr'];
     for (let artist of artists) {
-        if (artist.genres.some(genre => skipGenres.includes(genre))) continue;
-
         const artistData = {
             id: artist.id,
             name: artist.name,
             popularity: artist.popularity
         };
+        if (artist.genres.some(genre => skipGenres.includes(genre))) artistData = 'x';
         await redisClient.setArtistData(artist.id, artistData);
+        if (albumData == 'x') continue;
         addedArtists[artist.id] = artistData;
     }
     return addedArtists;
 }
 
-// async function addArtistAlbums(artistAlbums) {
-//     let addedArtistAlbums = {};
-//     for (let artistId in artistAlbums) {
-//         await redisClient.setArtistAlbumData(artistId, artistAlbums[artistId]);
-//         addedArtistAlbums[artistId] = artistAlbums[artistId];
-//     }
-//     return addedArtistAlbums;
-// }
-
 async function addAlbums(albums) {
     let addedAlbums = {};
-    const skipAlbumTypes = ['single', 'compilation', 'appears_on', 'live', 'remix', 'audiobook'];
+    const skipAlbumTypes = ['compilation', 'appears_on', 'live', 'remix', 'audiobook'];
     for (let album of albums) {
-        if (skipAlbumTypes.includes(album.album_type)) continue;
         //album.name.toLowerCase().includes('live') && 
-        if (album.tracks.items.map(track => track.name).every(trackName => trackName.toLowerCase().includes('live'))) continue;
+        // if (album.tracks.items.map(track => track.name).every(trackName => trackName.toLowerCase().includes('live'))) continue;
         if (album.artists.length > 1) continue;
 
         const albumData = {
@@ -70,7 +60,9 @@ async function addAlbums(albums) {
             popularity: album.popularity,
             releaseDate: album.release_date
         };
+        if (skipAlbumTypes.includes(album.album_type)) albumData = 'x';
         await redisClient.setAlbumData(album.id, albumData);
+        if (albumData == 'x') continue;
         addedAlbums[album.id] = albumData;
     }
     return addedAlbums;
@@ -79,8 +71,6 @@ async function addAlbums(albums) {
 async function addTracks(tracks) {
     let addedTracks = {};
     for (let track of tracks) {
-        if (track.linked_from) continue;
-
         const trackData = {
             id: track.id,
             artistIds: track.artists.map(artist => artist.id),
@@ -88,7 +78,9 @@ async function addTracks(tracks) {
             popularity: track.popularity,
             trackNumber: track.track_number
         };
+        if (track.linked_from) trackData = 'x';
         await redisClient.setTrackData(track.id, trackData);
+        if (albumData == 'x') continue;
         addedTracks[track.id] = trackData;
     }
     return addedTracks;
@@ -163,11 +155,9 @@ async function getArtists(accessToken, artistIds) {
 
     for (let artistId of artistIds) {
         const artistData = await redisClient.getArtistData(artistId);
-        if (artistData) {
-            artists[artistId] = artistData;
-        } else {
-            queryArtistIds.push(artistId);
-        }
+        if (artistData == 'x') continue;
+        if (artistData) artists[artistId] = artistData;
+        else queryArtistIds.push(artistId);
     }
 
     const limit = 50;
@@ -195,11 +185,9 @@ async function getArtistAlbums(accessToken, artistIds) {
     
     for (let artistId of artistIds) {
         const artistAlbumData = await redisClient.getArtistAlbumData(artistId);
-        if (artistAlbumData) {
-            artistAlbums[artistId] = artistAlbumData;
-        } else {
-            queryArtistIds.push(artistId);
-        }
+        if (artistAlbumData == 'x') continue;
+        if (artistAlbumData) artistAlbums[artistId] = artistAlbumData;
+        else queryArtistIds.push(artistId);
     }
 
     const limit = 50;
@@ -207,7 +195,7 @@ async function getArtistAlbums(accessToken, artistIds) {
         let albums = [];
         let offset = 0;
         while (true) {
-            const data = await fetchWithDelay(`${API_BASE_URL}/artists/${artistId}/albums?include_groups=album&offset=${offset}&limit=${limit}`, {
+            const data = await fetchWithDelay(`${API_BASE_URL}/artists/${artistId}/albums?include_groups=album,single&offset=${offset}&limit=${limit}`, {
                 headers: {
                     'Authorization': 'Bearer ' + accessToken
                 }
@@ -233,11 +221,9 @@ async function getAlbums(accessToken, albumIds) {
 
     for (let albumId of albumIds) {
         const albumData = await redisClient.getAlbumData(albumId);
-        if (albumData) {
-            albums[albumId] = albumData;
-        } else {
-            queryAlbums.push(albumId);
-        }
+        if (albumData == 'x') continue;
+        if (albumData) albums[albumId] = albumData;
+        else queryAlbums.push(albumId);
     }
 
     const limit = 20;
@@ -265,11 +251,9 @@ async function getTracks(accessToken, trackIds) {
 
     for (let trackId of trackIds) {
         const trackData = await redisClient.getTrackData(trackId);
-        if (trackData) {
-            tracks[trackId] = trackData;
-        } else {
-            queryTracks.push(trackId);
-        }
+        if (trackData == 'x') continue;
+        if (trackData) tracks[trackId] = trackData;
+        else queryTracks.push(trackId);
     }
 
     const limit = 50;
@@ -322,16 +306,25 @@ function getPopTracks(tracks, albums, artists) {
         // const meanArtistAlbumTrackPopularity = artists[artistId].trackIds.map(albumId => albumTrackPopularityScores[albumId]).reduce((sum, score, index, array) => sum + score / array.length, 0);
         
         let artistAlbums = artists[artistId].albumIds.map(albumId => albums[albumId]);
+        const artistAlbumPopularityMin = artistAlbums.map(album => album.popularity).min();
+        const artistAlbumPopularityMax = artistAlbums.map(album => album.popularity).max();
         artistAlbums = artistAlbums.sort((a, b) => b.popularity - a.popularity);
-        let numDev = 1;
+        // let numDev = 1;
         for (let album of artistAlbums) {
+            if (albumTrackPopularity.deviation == 0) continue;
+            
             const albumTrackPopularity = albumTrackPopularityScores[album.id];
             // let albumDeviations = (album.popularity - artistAlbumPopularity.mean) / artistAlbumPopularity.deviation;
             // if (albumTrackPopularity.mean < artistAlbumPopularity.mean - 1 * artistAlbumPopularity.deviation) continue;
 
-            if (album.popularity < artistAlbumPopularity.mean + artistAlbumPopularity.deviation) numDev += 1;
+            // if (album.popularity < artistAlbumPopularity.mean + artistAlbumPopularity.deviation) numDev += 1;
             // else numDev += 1;
-            
+
+            let numDev = 0.5;
+            if (album.popularity < artistAlbumPopularity.mean + artistAlbumPopularity.deviation) numDev += 0.5;
+            numDev += 0.5 * (1 - (album.popularity * 0.01));
+            numDev += 0.5 * (artistAlbumPopularityMax - album.popularity)/(artistAlbumPopularityMax - artistAlbumPopularityMin);
+
             // if (album.id == '2YSBHo8EgsejAGlmoyChJR')
             // {
             //     console.log('log');
@@ -344,18 +337,15 @@ function getPopTracks(tracks, albums, artists) {
 
             // If there are any tracks on the album, add the most popular ones
             // (albumTrackPopularity.mean / meanArtistAlbumTrackPopularity) * 
-            if (albumTrackPopularity.deviation > 0)
-            {
-                let numTracks = Math.ceil((album.popularity / artistAlbumPopularity.mean) * (artists[artistId].popularity / meanArtistPopularity));
-                if (numTracks > 0) {
-                    let sortedTracks = album.trackIds.map(trackId => tracks[trackId]).sort((a, b) => b.popularity - a.popularity);
-                    // sortedTracks = sortedTracks.slice(0, numTracks);
-                    for (let track of sortedTracks)
-                    {
-                        // (artists[artistId].albumIds.length * -albumDeviations)
-                        if (track.popularity < albumTrackPopularity.mean + numDev * albumTrackPopularity.deviation) continue;
-                        popTracks.push(track);
-                    }
+            let numTracks = Math.ceil((album.popularity / artistAlbumPopularity.mean) * (artists[artistId].popularity / meanArtistPopularity));
+            if (numTracks > 0) {
+                let sortedTracks = album.trackIds.map(trackId => tracks[trackId]).sort((a, b) => b.popularity - a.popularity);
+                // sortedTracks = sortedTracks.slice(0, numTracks);
+                for (let track of sortedTracks)
+                {
+                    // (artists[artistId].albumIds.length * -albumDeviations)
+                    if (track.popularity < albumTrackPopularity.mean + numDev * albumTrackPopularity.deviation) continue;
+                    popTracks.push(track);
                 }
             }
         }
