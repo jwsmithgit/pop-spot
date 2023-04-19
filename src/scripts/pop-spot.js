@@ -11,7 +11,7 @@ async function fetchWithDelay(call, callData) {
 
     const response = await fetch(call, callData);
     console.log('response status: ' + response.status);
-    
+
     if (!response.ok) {
         if (response.status === 429 && response.headers.has('Retry-After')) {
             let delaySeconds = Number(response.headers.get('Retry-After'));
@@ -90,13 +90,13 @@ async function getLikedArtists(accessToken) {
     let after = null;
 
     while (true) {
-        const data = await fetchWithDelay(`${API_BASE_URL}/me/following?type=artist&limit=${limit}` + (after ? `&after=${after}` : ``), { 
+        const data = await fetchWithDelay(`${API_BASE_URL}/me/following?type=artist&limit=${limit}` + (after ? `&after=${after}` : ``), {
             headers: {
                 'Authorization': 'Bearer ' + accessToken
             }
         });
 
-        artists = {...artists, ...await addArtists(data.artists.items)};
+        artists = { ...artists, ...await addArtists(data.artists.items) };
 
         if (!data.next) break;
         after = data.artists.items.map(artist => artist.id)[-1];
@@ -117,7 +117,7 @@ async function getLikedAlbums(accessToken) {
             }
         });
 
-        albums = {...albums, ...await addAlbums(data.items.map(item => item.album))};
+        albums = { ...albums, ...await addAlbums(data.items.map(item => item.album)) };
 
         if (!data.next) break;
         offset += limit;
@@ -138,7 +138,7 @@ async function getLikedTracks(accessToken) {
             }
         });
 
-        tracks = {...tracks, ...await addTracks(data.items.map(item => item.track))};
+        tracks = { ...tracks, ...await addTracks(data.items.map(item => item.track)) };
 
         if (!data.next) break;
         offset += limit;
@@ -163,7 +163,7 @@ async function getArtists(accessToken, artistIds) {
     for (let i = 0; i < queryArtistIds.length; i += limit) {
         artistChunks.push(queryArtistIds.slice(i, i + limit));
     }
-    
+
     for (let artistChunk of artistChunks) {
         const data = await fetchWithDelay(`${API_BASE_URL}/artists?ids=${artistChunk.join(',')}`, {
             headers: {
@@ -171,7 +171,7 @@ async function getArtists(accessToken, artistIds) {
             }
         });
 
-        artists = {...artists, ...await addArtists(data.artists)};
+        artists = { ...artists, ...await addArtists(data.artists) };
     }
 
     return artists;
@@ -180,7 +180,7 @@ async function getArtists(accessToken, artistIds) {
 async function getArtistAlbums(accessToken, artistIds) {
     let artistAlbums = {};
     let queryArtistIds = [];
-    
+
     for (let artistId of artistIds) {
         const artistAlbumData = await redisClient.getArtistAlbumData(artistId);
         if (artistAlbumData == 'x') continue;
@@ -237,7 +237,7 @@ async function getAlbums(accessToken, albumIds) {
             }
         });
 
-        albums = {...albums, ...await addAlbums(data.albums)};
+        albums = { ...albums, ...await addAlbums(data.albums) };
     }
 
     return albums;
@@ -266,8 +266,8 @@ async function getTracks(accessToken, trackIds) {
                 'Authorization': 'Bearer ' + accessToken
             }
         });
-        
-        tracks = {...tracks, ...await addTracks(data.tracks)};
+
+        tracks = { ...tracks, ...await addTracks(data.tracks) };
     }
 
     return tracks;
@@ -276,57 +276,56 @@ async function getTracks(accessToken, trackIds) {
 function getPopTracks(tracks, albums, artists) {
     let popTracks = [];
 
-    // Calculate the mean popularity score for each album
     const albumTrackPopularityScores = Object.values(albums).reduce((acc, album) => {
-        const albumTrackPopularityScores = album.trackIds.map((trackId) => tracks[trackId].popularity);
-        const albumTrackPopularityMean  = albumTrackPopularityScores.reduce((acc, score) => acc + score, 0) / albumTrackPopularityScores.length;
+        const albumTrackPopularityScores = album.trackIds
+            .map((trackId) => tracks[trackId].popularity);
+
+        const albumTrackPopularityMean = albumTrackPopularityScores.reduce((acc, score) => acc + score, 0) / albumTrackPopularityScores.length;
         const albumTrackPopularityDeviation = Math.sqrt(albumTrackPopularityScores.reduce((acc, score) => acc + Math.pow(score - albumTrackPopularityMean, 2), 0) / albumTrackPopularityScores.length);
-        acc[album.id] = { mean: albumTrackPopularityMean, deviation: albumTrackPopularityDeviation };
+
+        const filteredAlbumTrackPopularityScores = albumTrackPopularityScores.filter((score) => score >= albumTrackPopularityMean - albumTrackPopularityDeviation);
+
+        const filteredAlbumTrackPopularityMean = filteredAlbumTrackPopularityScores.reduce((acc, score) => acc + score, 0) / filteredAlbumTrackPopularityScores.length;
+        const filteredAlbumTrackPopularityDeviation = Math.sqrt(filteredAlbumTrackPopularityScores.reduce((acc, score) => acc + Math.pow(score - filteredAlbumTrackPopularityMean, 2), 0) / filteredAlbumTrackPopularityScores.length);
+
+        acc[album.id] = { mean: filteredAlbumTrackPopularityMean, deviation: filteredAlbumTrackPopularityDeviation };
         return acc;
     }, {});
 
-    // Calculate the mean popularity score for all albums by each artist
     const artistAlbumPopularityScores = Object.values(artists).reduce((acc, artist) => {
-        const artistAlbumPopularityScores = artist.albumIds.map((albumId) => albums[albumId].popularity);
+        const artistAlbumPopularityScores = artist.albumIds
+            .map((albumId) => albums[albumId].popularity);
+
         const artistAlbumPopularityMean = artistAlbumPopularityScores.reduce((acc, score) => acc + score, 0) / artistAlbumPopularityScores.length;
         const artistAlbumPopularityDeviation = Math.sqrt(artistAlbumPopularityScores.reduce((acc, score) => acc + Math.pow(score - artistAlbumPopularityMean, 2), 0) / artistAlbumPopularityScores.length);
-        acc[artist.id] = { mean: artistAlbumPopularityMean, deviation: artistAlbumPopularityDeviation };
+
+        const filteredArtistAlbumPopularityScores = artistAlbumPopularityScores.filter((score) => score >= artistAlbumPopularityMean - artistAlbumPopularityDeviation);
+
+        const filteredArtistAlbumPopularityMean = filteredArtistAlbumPopularityScores.reduce((acc, score) => acc + score, 0) / filteredArtistAlbumPopularityScores.length;
+        const filteredArtistAlbumPopularityDeviation = Math.sqrt(filteredArtistAlbumPopularityScores.reduce((acc, score) => acc + Math.pow(score - filteredArtistAlbumPopularityMean, 2), 0) / filteredArtistAlbumPopularityScores.length);
+
+        acc[artist.id] = { mean: filteredArtistAlbumPopularityMean, deviation: filteredArtistAlbumPopularityDeviation };
         return acc;
-      }, {});
-      
-    // Calculate the mean popularity score for all artists
-    // const artistPopularityScores = Object.values(artists).map((artist) => artist.popularity);
-    // const meanArtistPopularity = artistPopularityScores.reduce((acc, score) => acc + score, 0) / artistPopularityScores.length;
-    
+    }, {});
+
     // Loop over each album
     for (let artist of Object.values(artists)) {
         const artistAlbumPopularity = artistAlbumPopularityScores[artist.id];
-        
+
         let artistAlbums = artists[artist.id].albumIds.map(albumId => albums[albumId]);
         artistAlbums = artistAlbums.sort((a, b) => b.popularity - a.popularity);
-        const artistAlbumPopularityMax = Math.max(...artistAlbums.map(album => album.popularity));
 
         for (let album of artistAlbums) {
             const albumTrackPopularity = albumTrackPopularityScores[album.id];
             if (albumTrackPopularity.deviation == 0) continue;
-            
-            let albumThreshold = artistAlbumPopularityMax; //artistAlbumPopularity.mean + artistAlbumPopularity.deviation;
-            let albumDiff = Math.max(0, albumThreshold - album.popularity);
-            let numTracks = Math.ceil((album.popularity / artistAlbumPopularity.mean));// * (artist.popularity / meanArtistPopularity));
-            let sortedTracks = album.trackIds.map(trackId => tracks[trackId]).sort((a, b) => b.popularity - a.popularity);
-            sortedTracks = sortedTracks.slice(0, numTracks);
-            for (let track of sortedTracks)
-            {
-                if (track.popularity < albumTrackPopularity.mean + 0.5 * albumTrackPopularity.deviation + 0.5 * albumDiff) continue;
-                popTracks.push(track);
-            }
-            // If there are any tracks on the album, add the most popular ones
-            // 
-            // if (numTracks > 0) {
-            // }
+
+            const albumThreshold = artistAlbumPopularity.mean + artistAlbumPopularity.deviation;
+            const albumDeviation = Math.max(0, albumThreshold - album.popularity);
+
+            album.trackIds.map(trackId => tracks[trackId]).filter(track => track < albumTrackPopularity.mean + 0.5 * albumTrackPopularity.deviation + 0.5 * albumDeviation)
         }
     }
-    
+
     return popTracks;
 }
 
@@ -368,14 +367,14 @@ async function createPlaylist(accessToken, name, description, trackUris) {
     }
 }
 
-export async function execute(accessToken) {    
+export async function execute(accessToken) {
     let tracks = await getLikedTracks(accessToken);
-    
+
     let albums = await getLikedAlbums(accessToken);
-    albums = {...albums, ...await getAlbums(accessToken, Object.values(tracks).map(track => track.albumId))};
+    albums = { ...albums, ...await getAlbums(accessToken, Object.values(tracks).map(track => track.albumId)) };
 
     let artists = await getLikedArtists(accessToken);
-    artists = {...artists, ...await getArtists(accessToken, Object.values(albums).flatMap(album => album.artistIds))};
+    artists = { ...artists, ...await getArtists(accessToken, Object.values(albums).flatMap(album => album.artistIds)) };
     let artistAlbums = await getArtistAlbums(accessToken, Object.values(artists).map(artist => artist.id));
     for (let artistId in artistAlbums) artists[artistId].albumIds = artistAlbums[artistId];
 
@@ -389,7 +388,7 @@ export async function execute(accessToken) {
     let popTracksByName = {};
     popTracks.forEach(track => {
         const key = JSON.stringify(track.artistIds) + track.name;
-        if (!popTracksByName[key] || track.popularity > popTracksByName[key].popularity) popTracksByName[key] = track; 
+        if (!popTracksByName[key] || track.popularity > popTracksByName[key].popularity) popTracksByName[key] = track;
     });
     popTracks = Object.values(popTracksByName);
 
