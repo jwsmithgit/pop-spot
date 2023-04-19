@@ -322,7 +322,10 @@ function getPopTracks(tracks, albums, artists) {
             let numDev = 0.5;
             // if (album.popularity < artistAlbumPopularity.mean + artistAlbumPopularity.deviation) numDev += 0.5;
             // numDev += (1 - (album.popularity * 0.01));
-            if (artistAlbumPopularityMax != artistAlbumPopularityMin) numDev += 2 * (artistAlbumPopularityMax - album.popularity)/(artistAlbumPopularityMax - artistAlbumPopularityMin);
+            // get rank
+            numDev += artistAlbums.indexOf(album) / artistAlbums.length;
+            // get popularity compared to most popular
+            if (artistAlbumPopularityMax != artistAlbumPopularityMin) numDev += (artistAlbumPopularityMax - album.popularity)/(artistAlbumPopularityMax - artistAlbumPopularityMin);
 
             // if (album.id == '2YSBHo8EgsejAGlmoyChJR')
             // {
