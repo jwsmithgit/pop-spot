@@ -56,8 +56,8 @@ class RedisClient {
     await this.mutex.acquire();
     console.log(`redis: ${key}`);
     let data = this.client[`${key}:${id}`];
-    return data ? JSON.parse(data) : null;
     this.mutex.release();
+    return data ? JSON.parse(data) : null;
     // await this.connect();
     // console.log(`redis: ${key}`);
     // let data = await this.client.get(`${key}:${id}`);
