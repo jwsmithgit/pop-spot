@@ -328,15 +328,15 @@ function getPopTracks(tracks, albums, artists) {
             //if (artistAlbumPopularityMax != artistAlbumPopularityMin) 
             numDev += (artistAlbumPopularityMax - album.popularity) / 100;
 
-            // if (album.id == '2YSBHo8EgsejAGlmoyChJR')
-            // {
-            //     console.log('log');
-            //     console.log(albumTrackPopularity.mean);
-            //     console.log(albumTrackPopularity.deviation);
-            //     console.log(album.popularity);
-            //     console.log(albumDeviations);
-            //     console.log(albumTrackPopularity.mean + (10 * - Math.max(0, albumDeviations)) * albumTrackPopularity.deviation);
-            // }
+            if (album.id == '2YSBHo8EgsejAGlmoyChJR')
+            {
+                console.log('log');
+                console.log(numDev);
+                // console.log(albumTrackPopularity.deviation);
+                // console.log(album.popularity);
+                // console.log(albumDeviations);
+                // console.log(albumTrackPopularity.mean + (10 * - Math.max(0, albumDeviations)) * albumTrackPopularity.deviation);
+            }
 
             // If there are any tracks on the album, add the most popular ones
             // (albumTrackPopularity.mean / meanArtistAlbumTrackPopularity) * 
