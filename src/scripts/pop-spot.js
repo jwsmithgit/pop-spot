@@ -32,7 +32,7 @@ async function addArtists(artists) {
     let addedArtists = {};
     const skipGenres = ['asmr'];
     for (let artist of artists) {
-        const artistData = {
+        let artistData = {
             id: artist.id,
             name: artist.name,
             popularity: artist.popularity
@@ -53,7 +53,7 @@ async function addAlbums(albums) {
         // if (album.tracks.items.map(track => track.name).every(trackName => trackName.toLowerCase().includes('live'))) continue;
         if (album.artists.length > 1) continue;
 
-        const albumData = {
+        let albumData = {
             id: album.id,
             artistIds: album.artists.map(artist => artist.id),
             trackIds: album.tracks.items.map(track => track.id),
@@ -71,7 +71,7 @@ async function addAlbums(albums) {
 async function addTracks(tracks) {
     let addedTracks = {};
     for (let track of tracks) {
-        const trackData = {
+        let trackData = {
             id: track.id,
             artistIds: track.artists.map(artist => artist.id),
             albumId: track.album.id,
