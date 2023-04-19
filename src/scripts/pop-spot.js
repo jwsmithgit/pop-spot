@@ -316,7 +316,7 @@ function getPopTracks(tracks, albums, artists) {
             let sortedTracks = album.trackIds.map(trackId => tracks[trackId]).sort((a, b) => b.popularity - a.popularity);
             for (let track of sortedTracks)
             {
-                if (track.popularity < albumTrackPopularity.mean + albumTrackPopularity.deviation + 0.5 * albumDiff) continue;//numDev * albumTrackPopularity.deviation) continue;
+                if (track.popularity < albumTrackPopularity.mean + 0.5 * albumTrackPopularity.deviation + 0.5 * albumDiff) continue;//numDev * albumTrackPopularity.deviation) continue;
                 popTracks.push(track);
             }
             // If there are any tracks on the album, add the most popular ones
