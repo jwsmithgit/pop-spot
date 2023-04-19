@@ -304,12 +304,14 @@ function getPopTracks(tracks, albums, artists) {
         
         let artistAlbums = artists[artist.id].albumIds.map(albumId => albums[albumId]);
         artistAlbums = artistAlbums.sort((a, b) => b.popularity - a.popularity);
+        const artistAlbumPopularityMax = Math.max(...artistAlbums.map(album => album.popularity));
+
         for (let album of artistAlbums) {
             const albumTrackPopularity = albumTrackPopularityScores[album.id];
             if (albumTrackPopularity.deviation == 0) continue;
             
-            let albumDeviation = artistAlbumPopularity.mean + artistAlbumPopularity.deviation;
-            let albumDiff = Math.max(0, albumDeviation - album.popularity);
+            let albumThreshold = artistAlbumPopularityMax; //artistAlbumPopularity.mean + artistAlbumPopularity.deviation;
+            let albumDiff = Math.max(0, albumThreshold - album.popularity);
 
             let sortedTracks = album.trackIds.map(trackId => tracks[trackId]).sort((a, b) => b.popularity - a.popularity);
             for (let track of sortedTracks)
