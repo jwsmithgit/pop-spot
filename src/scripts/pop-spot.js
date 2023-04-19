@@ -325,7 +325,7 @@ function getPopTracks(tracks, albums, artists) {
             const albumDeviation = Math.max(0, albumThreshold - album.popularity);
 
             const albumTracks = album.trackIds.map(trackId => tracks[trackId]).filter(track => track >= albumTrackPopularity.mean + 0.5 * albumTrackPopularity.deviation + 0.5 * albumDeviation);
-            console.log(JSON.stringify(albumTracks).substring(0,100));
+            // console.log(JSON.stringify(albumTracks).substring(0,100));
             popTracks = popTracks.concat(albumTracks);
         }
     }
