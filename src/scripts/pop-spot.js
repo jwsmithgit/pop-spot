@@ -382,6 +382,8 @@ export async function execute(accessToken) {
     tracks = await getTracks(accessToken, Object.values(albums).flatMap(album => album.trackIds));
     let popTracks = getPopTracks(tracks, albums, artists);
 
+    console.log(JSON.stringify(popTracks).substring(0, 100));
+    
     // remove duplicates
     let popTracksByName = {};
     popTracks.forEach(track => {
@@ -389,6 +391,8 @@ export async function execute(accessToken) {
         if (!popTracksByName[key] || track.popularity > popTracksByName[key].popularity); 
     });
     popTracks = Object.values(popTracksByName);
+
+    console.log(JSON.stringify(popTracks).substring(0, 100));
 
     popTracks = popTracks.sort((a, b) => {
         if (a.artistIds[0] != b.artistIds[0]) {
