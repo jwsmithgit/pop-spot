@@ -360,7 +360,7 @@ function getPopTracks(tracks, albums, artists) {
                 for (let track of sortedTracks)
                 {
                     // (artists[artistId].albumIds.length * -albumDeviations)
-                    if (track.popularity < albumTrackPopularity.mean + albumTrackPopularity.deviation + albumDiff) continue;//numDev * albumTrackPopularity.deviation) continue;
+                    if (track.popularity < albumTrackPopularity.mean + 0.5 * albumTrackPopularity.deviation + 0.5 * albumDiff) continue;//numDev * albumTrackPopularity.deviation) continue;
                     popTracks.push(track);
                 }
             }
