@@ -383,7 +383,7 @@ export async function execute(accessToken) {
     let popTracks = getPopTracks(tracks, albums, artists);
 
     // remove duplicates
-    popTracksByName = {};
+    let popTracksByName = {};
     popTracks.forEach(track => {
         const key = JSON.stringify(track.artistIds) + track.name;
         if (popTracks[!key] || track.popularity > popTracks[key].popularity); 
