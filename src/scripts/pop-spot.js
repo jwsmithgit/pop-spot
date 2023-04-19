@@ -328,7 +328,7 @@ function getPopTracks(tracks, albums, artists) {
             // //if (artistAlbumPopularityMax != artistAlbumPopularityMin) 
             // numDev += (artistAlbumPopularityMax - album.popularity) / 100;
 
-            if (album.id == '0JyEWuZBMpLOezjt2DDt8M')
+            if (album.id == '3fpIt5UQt6axbkhw8OUOnM')
             {
                 console.log('log');
                 console.log(JSON.stringify(albums.map(album => album.popularity)));
