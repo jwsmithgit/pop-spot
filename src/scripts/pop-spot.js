@@ -382,13 +382,13 @@ export async function execute(accessToken) {
     tracks = await getTracks(accessToken, Object.values(albums).flatMap(album => album.trackIds));
     let popTracks = getPopTracks(tracks, albums, artists);
 
-    // remove duplicates
-    let popTracksByName = {};
-    popTracks.forEach(track => {
-        const key = JSON.stringify(track.artistIds) + track.name;
-        if (!popTracksByName[key] || track.popularity > popTracksByName[key].popularity) popTracksByName[key] = track; 
-    });
-    popTracks = Object.values(popTracksByName);
+    // // remove duplicates
+    // let popTracksByName = {};
+    // popTracks.forEach(track => {
+    //     const key = JSON.stringify(track.artistIds) + track.name;
+    //     if (!popTracksByName[key] || track.popularity > popTracksByName[key].popularity) popTracksByName[key] = track; 
+    // });
+    // popTracks = Object.values(popTracksByName);
 
     popTracks = popTracks.sort((a, b) => {
         if (a.artistIds[0] != b.artistIds[0]) {
