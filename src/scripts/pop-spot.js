@@ -307,7 +307,7 @@ function getPopTracks(tracks, albums, artists) {
         
         let artistAlbums = artists[artistId].albumIds.map(albumId => albums[albumId]);
         const artistAlbumPopularityMin = Math.min(...artistAlbums.map(album => album.popularity));
-        const artistAlbumPopularityMax = Math.max(...artistAlbums.map(album => album.popularity).max());
+        const artistAlbumPopularityMax = Math.max(...artistAlbums.map(album => album.popularity));
         artistAlbums = artistAlbums.sort((a, b) => b.popularity - a.popularity);
         // let numDev = 1;
         for (let album of artistAlbums) {
