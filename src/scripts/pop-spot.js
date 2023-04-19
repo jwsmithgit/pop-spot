@@ -331,7 +331,7 @@ function getPopTracks(tracks, albums, artists) {
             if (artist.id == '0JyEWuZBMpLOezjt2DDt8M')
             {
                 console.log('log');
-                console.log(JSON.stringify(albums.map(album => album.popularity)));
+                console.log(JSON.stringify(artistAlbums.map(album => album.popularity)));
                 console.log(JSON.stringify(tracks.map(track => track.popularity)));
             }
 
