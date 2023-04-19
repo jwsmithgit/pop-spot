@@ -319,27 +319,30 @@ function getPopTracks(tracks, albums, artists) {
             // if (album.popularity < artistAlbumPopularity.mean + artistAlbumPopularity.deviation) numDev += 1;
             // else numDev += 1;
 
-            let numDev = 1;
-            // if (album.popularity < artistAlbumPopularity.mean + artistAlbumPopularity.deviation) numDev += 0.5;
-            // numDev += (1 - (album.popularity * 0.01));
-            // get rank
-            numDev += artistAlbums.indexOf(album) / Math.max(10, artistAlbums.length);
-            // get popularity compared to most popular
-            //if (artistAlbumPopularityMax != artistAlbumPopularityMin) 
-            numDev += (artistAlbumPopularityMax - album.popularity) / 100;
+            // let numDev = 1;
+            // // if (album.popularity < artistAlbumPopularity.mean + artistAlbumPopularity.deviation) numDev += 0.5;
+            // // numDev += (1 - (album.popularity * 0.01));
+            // // get rank
+            // numDev += artistAlbums.indexOf(album) / Math.max(10, artistAlbums.length);
+            // // get popularity compared to most popular
+            // //if (artistAlbumPopularityMax != artistAlbumPopularityMin) 
+            // numDev += (artistAlbumPopularityMax - album.popularity) / 100;
 
-            if (album.id == '2YSBHo8EgsejAGlmoyChJR')
-            {
-                console.log('log');
-                console.log(numDev);
-                console.log(albumTrackPopularity.mean);
-                console.log(albumTrackPopularity.deviation);
-                console.log(albumTrackPopularity.mean + numDev * albumTrackPopularity.deviation);
-                console.log(JSON.stringify(album.trackIds.map(trackId => tracks[trackId])));
-                // console.log(album.popularity);
-                // console.log(albumDeviations);
-                // console.log(albumTrackPopularity.mean + (10 * - Math.max(0, albumDeviations)) * albumTrackPopularity.deviation);
-            }
+            // if (album.id == '2YSBHo8EgsejAGlmoyChJR')
+            // {
+            //     console.log('log');
+            //     console.log(numDev);
+            //     console.log(albumTrackPopularity.mean);
+            //     console.log(albumTrackPopularity.deviation);
+            //     console.log(albumTrackPopularity.mean + numDev * albumTrackPopularity.deviation);
+            //     console.log(JSON.stringify(album.trackIds.map(trackId => tracks[trackId])));
+            //     // console.log(album.popularity);
+            //     // console.log(albumDeviations);
+            //     // console.log(albumTrackPopularity.mean + (10 * - Math.max(0, albumDeviations)) * albumTrackPopularity.deviation);
+            // }
+
+            let albumDeviation = artistAlbumPopularity.mean + artistAlbumPopularity.deviation;
+            let albumDiff = Math.max(0, albumDeviation - album.popularity);
 
             // If there are any tracks on the album, add the most popular ones
             // (albumTrackPopularity.mean / meanArtistAlbumTrackPopularity) * 
@@ -350,7 +353,7 @@ function getPopTracks(tracks, albums, artists) {
                 for (let track of sortedTracks)
                 {
                     // (artists[artistId].albumIds.length * -albumDeviations)
-                    if (track.popularity < albumTrackPopularity.mean + numDev * albumTrackPopularity.deviation) continue;
+                    if (track.popularity < albumTrackPopularity.mean + albumTrackPopularity.deviation + albumDiff) continue;//numDev * albumTrackPopularity.deviation) continue;
                     popTracks.push(track);
                 }
             }
