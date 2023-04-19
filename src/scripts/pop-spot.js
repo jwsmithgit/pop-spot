@@ -51,8 +51,6 @@ async function addAlbums(albums) {
     for (let album of albums) {
         //album.name.toLowerCase().includes('live') && 
         // if (album.tracks.items.map(track => track.name).every(trackName => trackName.toLowerCase().includes('live'))) continue;
-        if (album.artists.length > 1) continue;
-
         let albumData = {
             id: album.id,
             artistIds: album.artists.map(artist => artist.id),
@@ -61,6 +59,7 @@ async function addAlbums(albums) {
             releaseDate: album.release_date
         };
         if (skipAlbumTypes.includes(album.album_type)) albumData = 'x';
+        if (album.artists.length > 1) albumData = 'x';
         await redisClient.setAlbumData(album.id, albumData);
         if (albumData == 'x') continue;
         addedAlbums[album.id] = albumData;
@@ -311,9 +310,9 @@ function getPopTracks(tracks, albums, artists) {
         artistAlbums = artistAlbums.sort((a, b) => b.popularity - a.popularity);
         // let numDev = 1;
         for (let album of artistAlbums) {
+            const albumTrackPopularity = albumTrackPopularityScores[album.id];
             if (albumTrackPopularity.deviation == 0) continue;
             
-            const albumTrackPopularity = albumTrackPopularityScores[album.id];
             // let albumDeviations = (album.popularity - artistAlbumPopularity.mean) / artistAlbumPopularity.deviation;
             // if (albumTrackPopularity.mean < artistAlbumPopularity.mean - 1 * artistAlbumPopularity.deviation) continue;
 
