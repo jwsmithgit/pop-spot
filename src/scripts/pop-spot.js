@@ -39,7 +39,7 @@ async function addArtists(artists) {
         };
         if (artist.genres.some(genre => skipGenres.includes(genre))) artistData = 'x';
         await redisClient.setArtistData(artist.id, artistData);
-        if (albumData == 'x') continue;
+        if (artistData == 'x') continue;
         addedArtists[artist.id] = artistData;
     }
     return addedArtists;
@@ -80,7 +80,7 @@ async function addTracks(tracks) {
         };
         if (track.linked_from) trackData = 'x';
         await redisClient.setTrackData(track.id, trackData);
-        if (albumData == 'x') continue;
+        if (trackData == 'x') continue;
         addedTracks[track.id] = trackData;
     }
     return addedTracks;
