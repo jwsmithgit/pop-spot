@@ -332,7 +332,10 @@ function getPopTracks(tracks, albums, artists) {
             {
                 console.log('log');
                 console.log(numDev);
-                // console.log(albumTrackPopularity.deviation);
+                console.log(albumTrackPopularity.mean);
+                console.log(albumTrackPopularity.deviation);
+                console.log(albumTrackPopularity.mean + numDev * albumTrackPopularity.deviation);
+                console.log(JSON.stringify(album.trackIds.map(trackId => tracks[trackId])));
                 // console.log(album.popularity);
                 // console.log(albumDeviations);
                 // console.log(albumTrackPopularity.mean + (10 * - Math.max(0, albumDeviations)) * albumTrackPopularity.deviation);
