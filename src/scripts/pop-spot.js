@@ -316,9 +316,6 @@ function getPopTracks(tracks, albums, artists) {
         for (let album of artistAlbums) {
             const albumTrackPopularity = albumTrackPopularityScores[album.id];
             if (albumTrackPopularity.deviation == 0) continue;
-            
-            console.log(JSON.stringify(artistAlbumPopularity).substring(0,100));
-            console.log(JSON.stringify(albumTrackPopularity).substring(0,100));
 
             const albumThreshold = artistAlbumPopularity.mean + artistAlbumPopularity.deviation;
             const albumDeviation = Math.max(0, albumThreshold - album.popularity);
@@ -401,7 +398,7 @@ export async function execute(accessToken) {
             let bArtist = artists[b.artistIds.find(artistId => artists[artistId])];
             if (!aArtist) return 1;
             if (!bArtist) return -1;
-            return aArtist.name < bArtist.name ? -1 : 1;
+            return aArtist.name.toLowerCase() < bArtist.name.toLowerCase() ? -1 : 1;
         }
         if (a.albumId != b.albumId) return albums[a.albumId].releaseDate < albums[b.albumId].releaseDate ? -1 : 1;
         return a.trackNumber - b.trackNumber;

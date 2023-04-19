@@ -2,24 +2,29 @@ import redis from 'redis';
 
 class RedisClient {
   constructor(redisUrl) {
-    this.client = redis.createClient({ url: redisUrl });
+    this.client = {};
+    // this.client = redis.createClient({ url: redisUrl });
   }
 
   async connect() {
-    if (this.client.isOpen) return;
-    await this.client.connect();
+    // if (this.client.isOpen) return;
+    // await this.client.connect();
   }
 
   async setData(key, id, data) {
-    await this.connect();
-    return await this.client.set(`${key}:${id}`, JSON.stringify(data));
+    this.client[`${key}:${id}`] = JSON.stringify(data);
+    // await this.connect();
+    // return await this.client.set(`${key}:${id}`, JSON.stringify(data));
   }
 
   async getData(key, id) {
-    await this.connect();
     console.log(`redis: ${key}`);
-    let data = await this.client.get(`${key}:${id}`);
+    let data = this.client[`${key}:${id}`];
     return data ? JSON.parse(data) : null;
+    // await this.connect();
+    // console.log(`redis: ${key}`);
+    // let data = await this.client.get(`${key}:${id}`);
+    // return data ? JSON.parse(data) : null;
   }
 
   async setArtistData(artistId, data) {
