@@ -378,7 +378,9 @@ export async function execute(accessToken) {
 
     let likedTracks = await getLikedTracks(accessToken);
     let tracks = {};
+    console.log(JSON.stringify(likedTracks).substring(0, 1000));
     for (let track in Object.values(likedTracks)) {
+        console.log(JSON.stringify(track).substring(0, 1000));
         track.artists.forEach(artist => artistNames[artist.id] = artist.name);
         let key = track.artists.map(artist => artist.id).join(',');
         if (artistPopTracks[key]) continue;
