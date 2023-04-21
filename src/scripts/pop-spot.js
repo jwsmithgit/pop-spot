@@ -363,8 +363,6 @@ export async function execute(accessToken) {
         else tracks[track.id] = track;
     }
 
-    console.log(JSON.stringify(tracks));
-
     let likedAlbums = await getLikedAlbums(accessToken);
     likedAlbums = { ...likedAlbums, ...await getAlbums(accessToken, Object.values(tracks).map(track => track.album.id)) };
     let albums = {};
@@ -386,7 +384,7 @@ export async function execute(accessToken) {
         if (artistPopTracks[key]) continue;
         let savedTracks = await redisClient.getData(key);
         if (savedTracks) artistPopTracks[key] = savedTracks;
-        else artists[album.id] = artist;
+        else artists[artist.id] = artist;
     }
 
     let artistAlbums = await getArtistAlbums(accessToken, Object.values(artists).map(artist => artist.id));
