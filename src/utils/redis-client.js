@@ -1,74 +1,74 @@
 import redis from 'redis';
 
-class Mutex {
-  constructor() {
-    this.locked = false;
-    this.queue = [];
-  }
+// class Mutex {
+//   constructor() {
+//     this.locked = false;
+//     this.queue = [];
+//   }
   
-  acquire() {
-    return new Promise((resolve) => {
-      if (!this.locked) {
-        this.locked = true;
-        resolve();
-      } else {
-        this.queue.push(resolve);
-      }
-    });
-  }
+//   acquire() {
+//     return new Promise((resolve) => {
+//       if (!this.locked) {
+//         this.locked = true;
+//         resolve();
+//       } else {
+//         this.queue.push(resolve);
+//       }
+//     });
+//   }
   
-  release() {
-    if (this.queue.length > 0) {
-      const next = this.queue.shift();
-      next();
-    } else {
-      this.locked = false;
-    }
-  }
-}
+//   release() {
+//     if (this.queue.length > 0) {
+//       const next = this.queue.shift();
+//       next();
+//     } else {
+//       this.locked = false;
+//     }
+//   }
+// }
 
-let instance = null;
+// let instance = null;
 
 class RedisClient {
   constructor(redisUrl) {
-    if (!instance) {
-      instance = this;
-      this.client = {};
-      this.mutex = new Mutex();
-    }
+    // if (!instance) {
+    //   instance = this;
+    //   this.client = {};
+    //   this.mutex = new Mutex();
+    // }
 
-    return instance;
-    // this.client = redis.createClient({ url: redisUrl });
+    // return instance;
+    this.client = redis.createClient({ url: redisUrl });
   }
 
   async connect() {
-    // if (this.client.isOpen) return;
-    // await this.client.connect();
+    if (this.client.isOpen) return;
+    await this.client.connect();
   }
 
   async release() {
-    // if (this.client.isOpen) return;
-    // await this.client.connect();
+    if (this.client.isOpen) return;
+    await this.client.connect();
   }
 
   async setData(key, id, data) {
-    await this.mutex.acquire();
-    this.client[`${key}:${id}`] = JSON.stringify(data);
-    this.mutex.release();
-    // await this.connect();
-    // return await this.client.set(`${key}:${id}`, JSON.stringify(data));
+    // await this.mutex.acquire();
+    // this.client[`${key}:${id}`] = JSON.stringify(data);
+    // this.mutex.release();
+    await this.connect();
+    await this.client.set(`${key}:${id}`, JSON.stringify(data));
   }
 
   async getData(key, id) {
-    await this.mutex.acquire();
-    console.log(`redis: ${key}`);
-    let data = this.client[`${key}:${id}`];
-    this.mutex.release();
-    return data ? JSON.parse(data) : null;
-    // await this.connect();
+    // await this.mutex.acquire();
     // console.log(`redis: ${key}`);
-    // let data = await this.client.get(`${key}:${id}`);
+    // let data = this.client[`${key}:${id}`];
+    // this.mutex.release();
     // return data ? JSON.parse(data) : null;
+    await this.connect();
+    console.log(`redis: ${key}`);
+    let data = await this.client.get(`${key}:${id}`);
+    return data ? JSON.parse(data) : null;
   }
 
   // async setArtistData(artistId, data) {
