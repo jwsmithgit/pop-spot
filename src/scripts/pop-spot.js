@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import { redisClient } from '../utils/redis-client.js';
-import * as utils from '../utils/util.js';
+import * as utils from '../utils/utils.js';
 const API_BASE_URL = 'https://api.spotify.com/v1';
 
 let delay = 100;
