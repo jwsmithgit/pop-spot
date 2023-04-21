@@ -28,61 +28,61 @@ async function fetchWithDelay(call, callData) {
     return await response.json();
 }
 
-async function addArtists(artists) {
-    let addedArtists = {};
-    const skipGenres = ['asmr'];
-    for (let artist of artists) {
-        let artistData = {
-            id: artist.id,
-            name: artist.name,
-            // popularity: artist.popularity
-        };
-        if (artist.genres.some(genre => skipGenres.includes(genre))) artistData = 'x';
-        await redisClient.setArtistData(artist.id, artistData);
-        if (artistData == 'x') continue;
-        addedArtists[artist.id] = artistData;
-    }
-    return addedArtists;
-}
+// async function addArtists(artists) {
+//     let addedArtists = {};
+//     const skipGenres = ['asmr'];
+//     for (let artist of artists) {
+//         let artistData = {
+//             id: artist.id,
+//             name: artist.name,
+//             // popularity: artist.popularity
+//         };
+//         if (artist.genres.some(genre => skipGenres.includes(genre))) artistData = 'x';
+//         await redisClient.setArtistData(artist.id, artistData);
+//         if (artistData == 'x') continue;
+//         addedArtists[artist.id] = artistData;
+//     }
+//     return addedArtists;
+// }
 
-async function addAlbums(albums) {
-    let addedAlbums = {};
-    const skipAlbumTypes = ['compilation', 'appears_on', 'live', 'remix', 'audiobook'];
-    for (let album of albums) {
-        let albumData = {
-            id: album.id,
-            artistIds: album.artists.map(artist => artist.id),
-            trackIds: album.tracks.items.map(track => track.id),
-            popularity: album.popularity,
-            releaseDate: album.release_date
-        };
-        if (skipAlbumTypes.includes(album.album_type)) albumData = 'x';
-        if (album.artists.length > 1) albumData = 'x';
-        await redisClient.setAlbumData(album.id, albumData);
-        if (albumData == 'x') continue;
-        addedAlbums[album.id] = albumData;
-    }
-    return addedAlbums;
-}
+// async function addAlbums(albums) {
+//     let addedAlbums = {};
+//     const skipAlbumTypes = ['compilation', 'appears_on', 'live', 'remix', 'audiobook'];
+//     for (let album of albums) {
+//         let albumData = {
+//             id: album.id,
+//             artistIds: album.artists.map(artist => artist.id),
+//             trackIds: album.tracks.items.map(track => track.id),
+//             popularity: album.popularity,
+//             releaseDate: album.release_date
+//         };
+//         if (skipAlbumTypes.includes(album.album_type)) albumData = 'x';
+//         if (album.artists.length > 1) albumData = 'x';
+//         await redisClient.setAlbumData(album.id, albumData);
+//         if (albumData == 'x') continue;
+//         addedAlbums[album.id] = albumData;
+//     }
+//     return addedAlbums;
+// }
 
-async function addTracks(tracks) {
-    let addedTracks = {};
-    for (let track of tracks) {
-        let trackData = {
-            id: track.id,
-            artistIds: track.artists.map(artist => artist.id),
-            albumId: track.album.id,
-            popularity: track.popularity,
-            trackNumber: track.track_number,
-            name: track.name
-        };
-        if (track.linked_from) trackData = 'x';
-        await redisClient.setTrackData(track.id, trackData);
-        if (trackData == 'x') continue;
-        addedTracks[track.id] = trackData;
-    }
-    return addedTracks;
-}
+// async function addTracks(tracks) {
+//     let addedTracks = {};
+//     for (let track of tracks) {
+//         let trackData = {
+//             id: track.id,
+//             artistIds: track.artists.map(artist => artist.id),
+//             albumId: track.album.id,
+//             popularity: track.popularity,
+//             trackNumber: track.track_number,
+//             name: track.name
+//         };
+//         if (track.linked_from) trackData = 'x';
+//         await redisClient.setTrackData(track.id, trackData);
+//         if (trackData == 'x') continue;
+//         addedTracks[track.id] = trackData;
+//     }
+//     return addedTracks;
+// }
 
 async function getLikedArtists(accessToken) {
     let artists = {};
@@ -149,19 +149,19 @@ async function getLikedTracks(accessToken) {
 
 async function getArtists(accessToken, artistIds) {
     let artists = {};
-    let queryArtistIds = [];
 
-    for (let artistId of artistIds) {
-        const artistData = await redisClient.getArtistData(artistId);
-        if (artistData == 'x') continue;
-        if (artistData) artists[artistId] = artistData;
-        else queryArtistIds.push(artistId);
-    }
+    // let queryArtistIds = [];
+    // for (let artistId of artistIds) {
+    //     const artistData = await redisClient.getArtistData(artistId);
+    //     if (artistData == 'x') continue;
+    //     if (artistData) artists[artistId] = artistData;
+    //     else queryArtistIds.push(artistId);
+    // }
 
     const limit = 50;
     const artistChunks = [];
-    for (let i = 0; i < queryArtistIds.length; i += limit) {
-        artistChunks.push(queryArtistIds.slice(i, i + limit));
+    for (let i = 0; i < artistIds.length; i += limit) {
+        artistChunks.push(artistIds.slice(i, i + limit));
     }
 
     for (let artistChunk of artistChunks) {
@@ -179,17 +179,17 @@ async function getArtists(accessToken, artistIds) {
 
 async function getArtistAlbums(accessToken, artistIds) {
     let artistAlbums = {};
-    let queryArtistIds = [];
 
-    for (let artistId of artistIds) {
-        const artistAlbumData = await redisClient.getArtistAlbumData(artistId);
-        if (artistAlbumData == 'x') continue;
-        if (artistAlbumData) artistAlbums[artistId] = artistAlbumData;
-        else queryArtistIds.push(artistId);
-    }
+    // let queryArtistIds = [];
+    // for (let artistId of artistIds) {
+    //     const artistAlbumData = await redisClient.getArtistAlbumData(artistId);
+    //     if (artistAlbumData == 'x') continue;
+    //     if (artistAlbumData) artistAlbums[artistId] = artistAlbumData;
+    //     else queryArtistIds.push(artistId);
+    // }
 
     const limit = 50;
-    for (let artistId of queryArtistIds) {
+    for (let artistId of artistIds) {
         let albums = [];
         let offset = 0;
         while (true) {
@@ -215,19 +215,19 @@ async function getArtistAlbums(accessToken, artistIds) {
 
 async function getAlbums(accessToken, albumIds) {
     let albums = {};
-    let queryAlbums = [];
 
-    for (let albumId of albumIds) {
-        const albumData = await redisClient.getAlbumData(albumId);
-        if (albumData == 'x') continue;
-        if (albumData) albums[albumId] = albumData;
-        else queryAlbums.push(albumId);
-    }
+    // let queryAlbums = [];
+    // for (let albumId of albumIds) {
+    //     const albumData = await redisClient.getAlbumData(albumId);
+    //     if (albumData == 'x') continue;
+    //     if (albumData) albums[albumId] = albumData;
+    //     else queryAlbums.push(albumId);
+    // }
 
     const limit = 20;
     const albumChunks = [];
-    for (let i = 0; i < queryAlbums.length; i += limit) {
-        albumChunks.push(queryAlbums.slice(i, i + limit));
+    for (let i = 0; i < albumIds.length; i += limit) {
+        albumChunks.push(albumIds.slice(i, i + limit));
     }
 
     for (let albumChunk of albumChunks) {
@@ -245,19 +245,19 @@ async function getAlbums(accessToken, albumIds) {
 
 async function getTracks(accessToken, trackIds) {
     let tracks = {};
-    let queryTracks = [];
 
-    for (let trackId of trackIds) {
-        const trackData = await redisClient.getTrackData(trackId);
-        if (trackData == 'x') continue;
-        if (trackData) tracks[trackId] = trackData;
-        else queryTracks.push(trackId);
-    }
+    // let queryTracks = [];
+    // for (let trackId of trackIds) {
+    //     const trackData = await redisClient.getTrackData(trackId);
+    //     if (trackData == 'x') continue;
+    //     if (trackData) tracks[trackId] = trackData;
+    //     else queryTracks.push(trackId);
+    // }
 
     const limit = 50;
     const trackChunks = [];
-    for (let i = 0; i < queryTracks.length; i += limit) {
-        trackChunks.push(queryTracks.slice(i, i + limit));
+    for (let i = 0; i < trackIds.length; i += limit) {
+        trackChunks.push(trackIds.slice(i, i + limit));
     }
 
     for (let trackChunk of trackChunks) {
@@ -367,13 +367,44 @@ async function createPlaylist(accessToken, name, description, trackUris) {
 }
 
 export async function execute(accessToken) {
-    let tracks = await getLikedTracks(accessToken);
+    let artistPopTracks = {};
+    let artistNames = {};
 
-    let albums = await getLikedAlbums(accessToken);
-    albums = { ...albums, ...await getAlbums(accessToken, Object.values(tracks).map(track => track.albumId)) };
+    let likedTracks = await getLikedTracks(accessToken);
+    let tracks = {};
+    for (let track in Object.values(likedTracks)) {
+        track.artists.forEach(artist => artistNames[artist.id] = artist.name);
+        let key = track.artists.map(artist => artist.id).join(',');
+        if (artistPopTracks[key]) continue;
+        let savedTracks = await redisClient.getArtistPopTracks(key);
+        if (savedTracks) artistPopTracks[key] = savedTracks;
+        else tracks[track.id] = track;
+    }
 
-    let artists = await getLikedArtists(accessToken);
-    artists = { ...artists, ...await getArtists(accessToken, Object.values(albums).flatMap(album => album.artistIds)) };
+    let likedAlbums = await getLikedAlbums(accessToken);
+    likedAlbums = { ...likedAlbums, ...await getAlbums(accessToken, Object.values(tracks).map(track => track.albumId)) };
+    let albums = {};
+    for (let album in Object.values(likedAlbums)) {
+        album.artists.forEach(artist => artistNames[artist.id] = artist.name);
+        let key = album.artists.map(artist => artist.id).join(',');
+        if (artistPopTracks[key]) continue;
+        let savedTracks = await redisClient.getArtistPopTracks(key);
+        if (savedTracks) artistPopTracks[key] = savedTracks;
+        else albums[album.id] = album;
+    }
+
+    let likedArtists = await getLikedArtists(accessToken);
+    likedArtists = { ...likedArtists, ...await getArtists(accessToken, Object.values(albums).flatMap(album => album.artistIds)) };
+    let artists = {};
+    for (let artist in Object.values(likedArtists)) {
+        artistNames[artist.id] = artist.name;
+        let key = String(artist.id)
+        if (artistPopTracks[key]) continue;
+        let savedTracks = await redisClient.getArtistPopTracks(key);
+        if (savedTracks) artistPopTracks[key] = savedTracks;
+        else artists[album.id] = artist;
+    }
+
     let artistAlbums = await getArtistAlbums(accessToken, Object.values(artists).map(artist => artist.id));
     for (let artistId in artistAlbums) artists[artistId].albumIds = artistAlbums[artistId];
 
@@ -404,6 +435,24 @@ export async function execute(accessToken) {
         return a.trackNumber - b.trackNumber;
     });
 
+    let addArtistPopTracks = {};
+    popTracks.forEach(track => {
+        const key = track.artists.map(artist => artist.id).join(',');
+        if (!addArtistPopTracks[key]) addArtistPopTracks[key] = [];
+        addArtistPopTracks[key].push(track);
+    });
+    
+    for (let key in addArtistPopTracks) {
+        redisClient.setArtistPopTracks(key, addArtistPopTracks[artistId]);
+        artistPopTracks[artistId] = addArtistPopTracks[aristId];
+    }
+
+    sortedArtistNames = Object.values(artistNames).sort();
+    popTracks = [];
+    for (let artistId in Object.key(artistPopTracks).sort((a, b) => artistNames[a].toLowerCase() < artistNames[b].toLowerCase() ? -1 : 1)) {
+        popTracks = popTracks.concat(artistPopTracks[artistId]);
+    }
+    
     // console.log('Popular tracks: ' + JSON.stringify(popularTracks).substring(0, 100));
     await createPlaylist(accessToken, 'Pop Spot', 'Liked Artist Popular Tracks', popTracks.map(track => `spotify:track:${track.id}`));
 }
