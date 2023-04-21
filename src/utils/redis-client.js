@@ -71,37 +71,37 @@ class RedisClient {
     // return data ? JSON.parse(data) : null;
   }
 
-  async setArtistData(artistId, data) {
-    return await this.setData('artist', artistId, data);
-  }
+  // async setArtistData(artistId, data) {
+  //   return await this.setData('artist', artistId, data);
+  // }
 
-  async getArtistData(artistId) {
-    return await this.getData('artist', artistId);
-  }
+  // async getArtistData(artistId) {
+  //   return await this.getData('artist', artistId);
+  // }
   
-  async setArtistAlbumData(artistId, data) {
-    return await this.setData('artist:album', artistId, data);
-  }
+  // async setArtistAlbumData(artistId, data) {
+  //   return await this.setData('artist:album', artistId, data);
+  // }
 
-  async getArtistAlbumData(artistId) {
-    return await this.getData('artist:album', artistId);
-  }
+  // async getArtistAlbumData(artistId) {
+  //   return await this.getData('artist:album', artistId);
+  // }
 
-  async setAlbumData(albumId, data) {
-    return await this.setData('album', albumId, data);
-  }
+  // async setAlbumData(albumId, data) {
+  //   return await this.setData('album', albumId, data);
+  // }
 
-  async getAlbumData(albumId) {
-    return await this.getData('album', albumId);
-  }
+  // async getAlbumData(albumId) {
+  //   return await this.getData('album', albumId);
+  // }
 
-  async setTrackData(trackId, data) {
-    return await this.setData('track', trackId, data);
-  }
+  // async setTrackData(trackId, data) {
+  //   return await this.setData('track', trackId, data);
+  // }
 
-  async getTrackData(trackId) {
-    return await this.getData('track', trackId);
-  }
+  // async getTrackData(trackId) {
+  //   return await this.getData('track', trackId);
+  // }
 }
 
 const redisClient = new RedisClient(process.env.REDIS_URL);

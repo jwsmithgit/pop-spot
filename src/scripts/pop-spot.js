@@ -206,7 +206,7 @@ async function getArtistAlbums(accessToken, artistIds) {
             offset += limit;
         }
 
-        await redisClient.setArtistAlbumData(artistId, albums);
+        // await redisClient.setArtistAlbumData(artistId, albums);
         artistAlbums[artistId] = albums;
     }
 
@@ -376,7 +376,7 @@ export async function execute(accessToken) {
         track.artists.forEach(artist => artistNames[artist.id] = artist.name);
         let key = track.artists.map(artist => artist.id).join(',');
         if (artistPopTracks[key]) continue;
-        let savedTracks = await redisClient.getArtistPopTracks(key);
+        let savedTracks = await redisClient.getData(key);
         if (savedTracks) artistPopTracks[key] = savedTracks;
         else tracks[track.id] = track;
     }
@@ -388,7 +388,7 @@ export async function execute(accessToken) {
         album.artists.forEach(artist => artistNames[artist.id] = artist.name);
         let key = album.artists.map(artist => artist.id).join(',');
         if (artistPopTracks[key]) continue;
-        let savedTracks = await redisClient.getArtistPopTracks(key);
+        let savedTracks = await redisClient.getData(key);
         if (savedTracks) artistPopTracks[key] = savedTracks;
         else albums[album.id] = album;
     }
@@ -400,7 +400,7 @@ export async function execute(accessToken) {
         artistNames[artist.id] = artist.name;
         let key = String(artist.id)
         if (artistPopTracks[key]) continue;
-        let savedTracks = await redisClient.getArtistPopTracks(key);
+        let savedTracks = await redisClient.getData(key);
         if (savedTracks) artistPopTracks[key] = savedTracks;
         else artists[album.id] = artist;
     }
@@ -443,7 +443,7 @@ export async function execute(accessToken) {
     });
     
     for (let key in addArtistPopTracks) {
-        redisClient.setArtistPopTracks(key, addArtistPopTracks[artistId]);
+        redisClient.setData(key, addArtistPopTracks[artistId]);
         artistPopTracks[artistId] = addArtistPopTracks[aristId];
     }
 
