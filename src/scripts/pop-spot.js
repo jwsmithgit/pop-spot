@@ -230,8 +230,6 @@ async function getAlbums(accessToken, albumIds) {
             }
         });
 
-        console.log(JSON.stringify(data.albums));
-        console.log(data.albums.count(album => !album));
         data.albums.forEach(album => albums[album.id] = album);
         // albums = { ...albums, ...await addAlbums(data.albums) };
     }
