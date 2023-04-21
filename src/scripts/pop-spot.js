@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import { redisClient } from '../utils/redis-client.js';
+import * as utils from '../utils/util.js';
 const API_BASE_URL = 'https://api.spotify.com/v1';
 
 let delay = 100;
@@ -161,13 +162,7 @@ async function getArtists(accessToken, artistIds) {
     //     else queryArtistIds.push(artistId);
     // }
 
-    const limit = 50;
-    const artistChunks = [];
-    for (let i = 0; i < artistIds.length; i += limit) {
-        artistChunks.push(artistIds.slice(i, i + limit));
-    }
-
-    for (let artistChunk of artistChunks) {
+    for (let artistChunk of utils.chunkArray(artistIds, 50)) {
         const data = await fetchWithDelay(`${API_BASE_URL}/artists?ids=${artistChunk.join(',')}`, {
             headers: {
                 'Authorization': 'Bearer ' + accessToken
@@ -228,13 +223,7 @@ async function getAlbums(accessToken, albumIds) {
     //     else queryAlbums.push(albumId);
     // }
 
-    const limit = 20;
-    const albumChunks = [];
-    for (let i = 0; i < albumIds.length; i += limit) {
-        albumChunks.push(albumIds.slice(i, i + limit));
-    }
-
-    for (let albumChunk of albumChunks) {
+    for (let albumChunk of utils.chunkArray(albumIds, 20)) {
         const data = await fetchWithDelay(`${API_BASE_URL}/albums?ids=${albumChunk.join(',')}`, {
             headers: {
                 'Authorization': 'Bearer ' + accessToken
@@ -261,13 +250,7 @@ async function getTracks(accessToken, trackIds) {
     //     else queryTracks.push(trackId);
     // }
 
-    const limit = 50;
-    const trackChunks = [];
-    for (let i = 0; i < trackIds.length; i += limit) {
-        trackChunks.push(trackIds.slice(i, i + limit));
-    }
-
-    for (let trackChunk of trackChunks) {
+    for (let trackChunk of utils.chunkArray(trackIds, 50)) {
         let data = await fetchWithDelay(`https://api.spotify.com/v1/tracks?ids=${trackChunk.join(',')}`, {
             headers: {
                 'Authorization': 'Bearer ' + accessToken
@@ -348,17 +331,10 @@ async function createPlaylist(accessToken, name, description, trackUris) {
             description
         })
     });
-
     const playlistId = data.id;
 
-    // Divide the track URIs into chunks of 100
-    const chunkedTrackUris = [];
-    for (let i = 0; i < trackUris.length; i += 100) {
-        chunkedTrackUris.push(trackUris.slice(i, i + 100));
-    }
-
     // Send requests for each chunk of track URIs
-    for (let i = 0; i < chunkedTrackUris.length; i++) {
+    for (let trackChunk of utils.chunkArray(trackUris, 100)) {
         await fetchWithDelay(`${API_BASE_URL}/playlists/${playlistId}/tracks`, {
             method: 'POST',
             headers: {
@@ -366,7 +342,7 @@ async function createPlaylist(accessToken, name, description, trackUris) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                uris: chunkedTrackUris[i]
+                uris: trackChunk
             })
         });
 
@@ -381,7 +357,6 @@ export async function execute(accessToken) {
     let likedTracks = await getLikedTracks(accessToken);
     let tracks = {};
     for (let track of Object.values(likedTracks)) {
-        console.log(JSON.stringify(track).substring(0, 1000));
         track.artists.forEach(artist => artistNames[artist.id] = artist.name);
         let key = track.artists.map(artist => artist.id).join(',');
         if (artistPopTracks[key]) continue;
@@ -389,6 +364,8 @@ export async function execute(accessToken) {
         if (savedTracks) artistPopTracks[key] = savedTracks;
         else tracks[track.id] = track;
     }
+
+    console.log(JSON.stringify(tracks));
 
     let likedAlbums = await getLikedAlbums(accessToken);
     likedAlbums = { ...likedAlbums, ...await getAlbums(accessToken, Object.values(tracks).map(track => track.albumId)) };
