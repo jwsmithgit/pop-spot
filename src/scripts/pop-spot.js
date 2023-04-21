@@ -368,7 +368,7 @@ export async function execute(accessToken) {
     console.log(JSON.stringify(tracks));
 
     let likedAlbums = await getLikedAlbums(accessToken);
-    likedAlbums = { ...likedAlbums, ...await getAlbums(accessToken, Object.values(tracks).map(track => track.albumId)) };
+    likedAlbums = { ...likedAlbums, ...await getAlbums(accessToken, Object.values(tracks).map(track => track.album.id)) };
     let albums = {};
     for (let album of Object.values(likedAlbums)) {
         album.artists.forEach(artist => artistNames[artist.id] = artist.name);
@@ -380,7 +380,7 @@ export async function execute(accessToken) {
     }
 
     let likedArtists = await getLikedArtists(accessToken);
-    likedArtists = { ...likedArtists, ...await getArtists(accessToken, Object.values(albums).flatMap(album => album.artistIds)) };
+    likedArtists = { ...likedArtists, ...await getArtists(accessToken, Object.values(albums).flatMap(album => album.artists.map(artist => artist.id))) };
     let artists = {};
     for (let artist of Object.values(likedArtists)) {
         artistNames[artist.id] = artist.name;
@@ -394,10 +394,10 @@ export async function execute(accessToken) {
     let artistAlbums = await getArtistAlbums(accessToken, Object.values(artists).map(artist => artist.id));
     for (let artistId in artistAlbums) artists[artistId].albumIds = artistAlbums[artistId];
 
-    albums = await getAlbums(accessToken, Object.values(artists).map(artist => artist.albumIds).flat());
+    albums = await getAlbums(accessToken, Object.values(artists).map(artist => artist.albums.map(album => album.id).flat()));
     for (let artistId in artists) artists[artistId].albumIds = artists[artistId].albumIds.filter(albumId => albums[albumId]);
 
-    tracks = await getTracks(accessToken, Object.values(albums).flatMap(album => album.trackIds));
+    tracks = await getTracks(accessToken, Object.values(albums).flatMap(album => album.tracks.items.map(track => track.id)));
     let popTracks = getPopTracks(tracks, albums, artists);
 
     // remove duplicates
