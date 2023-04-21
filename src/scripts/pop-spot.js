@@ -96,7 +96,8 @@ async function getLikedArtists(accessToken) {
             }
         });
 
-        artists = { ...artists, ...await addArtists(data.artists.items) };
+        data.artists.items.forEach(artist => artists[artist.id] = artist);
+        // artists = { ...artists, ...await addArtists(data.artists.items) };
 
         if (!data.next) break;
         after = data.artists.items.map(artist => artist.id)[-1];
@@ -117,7 +118,8 @@ async function getLikedAlbums(accessToken) {
             }
         });
 
-        albums = { ...albums, ...await addAlbums(data.items.map(item => item.album)) };
+        data.items.map(item => item.album).forEach(album => albums[album.id] = album);
+        // albums = { ...albums, ...await addAlbums(data.items.map(item => item.album)) };
 
         if (!data.next) break;
         offset += limit;
@@ -138,7 +140,8 @@ async function getLikedTracks(accessToken) {
             }
         });
 
-        tracks = { ...tracks, ...await addTracks(data.items.map(item => item.track)) };
+        data.items.map(item => item.track).forEach(track => tracks[track.id] = track);
+        // tracks = { ...tracks, ...await addTracks(data.items.map(item => item.track)) };
 
         if (!data.next) break;
         offset += limit;
@@ -171,7 +174,8 @@ async function getArtists(accessToken, artistIds) {
             }
         });
 
-        artists = { ...artists, ...await addArtists(data.artists) };
+        data.artists.forEach(artist => artists[artist.id] = artist);
+        // artists = { ...artists, ...await addArtists(data.artists) };
     }
 
     return artists;
@@ -237,7 +241,8 @@ async function getAlbums(accessToken, albumIds) {
             }
         });
 
-        albums = { ...albums, ...await addAlbums(data.albums) };
+        data.albums.forEach(album => albums[album.id] = album);
+        // albums = { ...albums, ...await addAlbums(data.albums) };
     }
 
     return albums;
@@ -267,7 +272,8 @@ async function getTracks(accessToken, trackIds) {
             }
         });
 
-        tracks = { ...tracks, ...await addTracks(data.tracks) };
+        data.tracks.forEach(track => tracks[track.id] = track);
+        // tracks = { ...tracks, ...await addTracks(data.tracks) };
     }
 
     return tracks;
