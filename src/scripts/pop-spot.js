@@ -378,8 +378,7 @@ export async function execute(accessToken) {
 
     let likedTracks = await getLikedTracks(accessToken);
     let tracks = {};
-    console.log(JSON.stringify(likedTracks).substring(0, 1000));
-    for (let track in Object.values(likedTracks)) {
+    for (let track of Object.values(likedTracks)) {
         console.log(JSON.stringify(track).substring(0, 1000));
         track.artists.forEach(artist => artistNames[artist.id] = artist.name);
         let key = track.artists.map(artist => artist.id).join(',');
@@ -392,7 +391,7 @@ export async function execute(accessToken) {
     let likedAlbums = await getLikedAlbums(accessToken);
     likedAlbums = { ...likedAlbums, ...await getAlbums(accessToken, Object.values(tracks).map(track => track.albumId)) };
     let albums = {};
-    for (let album in Object.values(likedAlbums)) {
+    for (let album of Object.values(likedAlbums)) {
         album.artists.forEach(artist => artistNames[artist.id] = artist.name);
         let key = album.artists.map(artist => artist.id).join(',');
         if (artistPopTracks[key]) continue;
@@ -404,7 +403,7 @@ export async function execute(accessToken) {
     let likedArtists = await getLikedArtists(accessToken);
     likedArtists = { ...likedArtists, ...await getArtists(accessToken, Object.values(albums).flatMap(album => album.artistIds)) };
     let artists = {};
-    for (let artist in Object.values(likedArtists)) {
+    for (let artist of Object.values(likedArtists)) {
         artistNames[artist.id] = artist.name;
         let key = String(artist.id)
         if (artistPopTracks[key]) continue;
